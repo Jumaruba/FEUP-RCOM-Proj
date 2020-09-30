@@ -61,8 +61,6 @@ int main(int argc, char** argv)
     leitura do(s) pr�ximo(s) caracter(es)
   */
 
-
-
     tcflush(fd, TCIOFLUSH);
 
     if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
@@ -76,18 +74,10 @@ int main(int argc, char** argv)
     while (STOP==FALSE) {           /* loop for input */
       res = read(fd,buf,255);       /* returns after 5 chars have been input */
       buf[res]='\0';                /* so we can printf... */
-      printf(":%s:%d\n", buf, res);
+      printf(":%s:%d\n", buf, res); 
+      bytes = write(fd,buf,res); 	/* returns to the emissor the message*/ 
       if (buf[0]=='z') STOP=TRUE;
     }
-
-    
-    bytes = write(fd,buf,res);
-
-
-
-  /* 
-    O ciclo WHILE deve ser alterado de modo a respeitar o indicado no gui�o 
-  */
 
 
     tcsetattr(fd,TCSANOW,&oldtio);
