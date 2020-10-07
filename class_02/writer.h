@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h> 
+#include <stdlib.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -16,17 +17,14 @@
 
 volatile int STOP=FALSE;
 
+/**
+ * @brief Send first 3 bytes of the header : FLAG, ADDRESS FIELD, COMMAND FIELD
+ * 
+ * @param CMD Command field
+ * @param ADDR Address field
+ * @return int -1 in case of error, the number of bytes written otherwise
+ */
+int send_header(char ADDR, char CMD); 
 
-#define BYTE            8
-
-/* Macros for the protocol*/ 
-
-#define FLAG            0x7E         
-
-#define CMD_EMI         0x30        /* Command sent by the emissor*/  
-#define ANS_EMI         0x01        /* Answer sent by the receptor*/  
-
-#define CMD_REC         0x01        /* Command sent by the emissor*/ 
-#define ANS_REC         0x30        /* Aswser sent by the receptor*/ 
 
 #endif 

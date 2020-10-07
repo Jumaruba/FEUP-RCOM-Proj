@@ -1,20 +1,20 @@
 /*Non-Canonical Input Processing*/
 
 #include "writer.h" 
+#include "globals.h"
 
-
-
+int fd; 
 
 int main(int argc, char** argv)
 {
-    int fd,c, res;
+    int c, res;
     struct termios oldtio,newtio;
     char buf[255];
     int i, sum = 0, speed = 0;
     
     if ( (argc < 2) || 
-  	     ((strcmp("/dev/ttyS0", argv[1])!=0) && 
-  	      (strcmp("/dev/ttyS1", argv[1])!=0) )) {
+  	     ((strcmp("/dev/ttyS10", argv[1])!=0) && 
+  	      (strcmp("/dev/ttyS11", argv[1])!=0) )) {
       printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
       exit(1);
     }
@@ -65,8 +65,7 @@ int main(int argc, char** argv)
 
 	
 	 
-	
-    res = write(fd,FLAG,BYTE);   
+    res = send_header(ADDR_ANS_EMI, CMD_SET); 
     printf("%d bytes written\n", res);
  
 
@@ -89,3 +88,14 @@ int main(int argc, char** argv)
     close(fd);
     return 0;
 }
+
+
+int send_header(char ADDR,char CMD){
+  char head[3]; 
+  head[0] = FLAG; 
+  head[1] = ADDR; 
+  head[2] = CMD; 
+  int res = write(fd, head, 3); 
+  return res; 
+}
+
