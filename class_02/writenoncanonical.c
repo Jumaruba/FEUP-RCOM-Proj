@@ -14,6 +14,13 @@
 
 volatile int STOP=FALSE;
 
+typedef struct packTrama{
+	char flag[8] = "01111110"; 				/* Delimitation flag */ 
+	char address[8] = "00000011"; 			/* Command by emissor and answer by receptor*/ 
+	
+ 
+}packTrama; 
+
 int main(int argc, char** argv)
 {
     int fd,c, res;
@@ -72,16 +79,12 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-
-
-    for (i = 0; i < 255; i++) {
-      buf[i] = 'a';
-    }
-    
-    /*testing*/
-    buf[25] = '\n';
-    
-    res = write(fd,buf,255);   
+	
+	packTrama s; 
+	int i = 0; 
+	 
+	
+    res = write(fd,flag,strlen(flag));   
     printf("%d bytes written\n", res);
  
 
