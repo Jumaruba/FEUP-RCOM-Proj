@@ -16,6 +16,9 @@
 
 volatile int STOP=FALSE;
 
+
+#define BYTE            8
+
 /* Macros for the protocol*/ 
 
 #define FLAG            0x7E         

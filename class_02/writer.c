@@ -64,11 +64,9 @@ int main(int argc, char** argv)
     printf("New termios structure set\n");
 
 	
-	packTrama s; 
-	int i = 0; 
 	 
 	
-    res = write(fd,flag,strlen(flag));   
+    res = write(fd,FLAG,BYTE);   
     printf("%d bytes written\n", res);
  
 
