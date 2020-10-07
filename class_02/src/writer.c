@@ -1,14 +1,13 @@
 /*Non-Canonical Input Processing*/
 
-#include "writer.h" 
-#include "globals.h"
+#include "../include/writer.h" 
 
 int fd; 
+struct termios oldtio,newtio; 
 
 int main(int argc, char** argv)
 {
     int c, res;
-    struct termios oldtio,newtio;
     char buf[255];
     int i, sum = 0, speed = 0;
     
@@ -19,14 +18,25 @@ int main(int argc, char** argv)
       exit(1);
     }
 
+    openDescriptor(argv); 
 
-  /*
-    Open serial port device for reading and writing and not as controlling tty
-    because we don't want to get killed if linenoise sends CTRL-C.
-  */
+    res = send_SU(fd, ADDR_ANS_EMI, CMD_SET);
+    printf("%d bytes written\n", res);
 
+   
+    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
+      perror("tcsetattr");
+      exit(-1);
+    }
 
-    fd = open(argv[1], O_RDWR | O_NOCTTY );
+    close(fd);
+    return 0;
+}
+
+int openDescriptor(char** argv){
+
+    fd = open(argv[1], O_RDWR | O_NOCTTY ); 
+
     if (fd <0) {perror(argv[1]); exit(-1); }
 
     if ( tcgetattr(fd,&oldtio) == -1) { /* save current port settings */
@@ -45,15 +55,6 @@ int main(int argc, char** argv)
     newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
     newtio.c_cc[VMIN]     = 5;   /* blocking read until 5 chars received */
 
-
-
-  /* 
-    VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a 
-    leitura do(s) pr�ximo(s) caracter(es)
-  */
-
-
-
     tcflush(fd, TCIOFLUSH);
 
     if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
@@ -61,41 +62,19 @@ int main(int argc, char** argv)
       exit(-1);
     }
 
-    printf("New termios structure set\n");
+    printf("New termios structure set\n"); 
 
-	
-	 
-    res = send_header(ADDR_ANS_EMI, CMD_SET); 
-    printf("%d bytes written\n", res);
- 
+    return 0; 
+} 
 
-  /* 
-    O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar 
-    o indicado no gui�o 
-  */
+int send_SU(int fd, char ADDR, char CMD){
+  char trama[5];  
+  trama[0] = FLAG; 
+  trama[1] = ADDR;
+  trama[2] = CMD;
+  trama[3] = trama[1] ^ trama[2]; 
+  trama[4] = FLAG; 
 
-
-
-   
-    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-      perror("tcsetattr");
-      exit(-1);
-    }
-
-
-
-
-    close(fd);
-    return 0;
-}
-
-
-int send_header(char ADDR,char CMD){
-  char head[3]; 
-  head[0] = FLAG; 
-  head[1] = ADDR; 
-  head[2] = CMD; 
-  int res = write(fd, head, 3); 
+  int res = write(fd, trama, 5); 
   return res; 
 }
-

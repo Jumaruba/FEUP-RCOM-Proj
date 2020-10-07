@@ -1,7 +1,6 @@
 /*Non-Canonical Input Processing*/
 
-#include "reader.h"
-#include "globals.h" 
+#include "../include/reader.h"
 
 
 int main(int argc, char** argv)
