@@ -2,38 +2,38 @@
 
 #include "../include/reader.h"
 
-int fd; 
-struct termios oldtio,newtio; 
+int fd;
+struct termios oldtio, newtio;
 
-int main(int argc, char** argv)
-{
-    int c, res; 
-
-    char buf;
-    unsigned int bytes;
-
-    if ( (argc < 2) ||
-  	     ((strcmp("/dev/ttyS10", argv[1])!=0) &&
-  	      (strcmp("/dev/ttyS11", argv[1])!=0) )) {
-      printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
-      exit(1);
+int main(int argc, char **argv) {
+    if ((argc < 2) ||
+        ((strcmp("/dev/ttyS10", argv[1]) != 0) &&
+         (strcmp("/dev/ttyS11", argv[1]) != 0))) {
+        printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
+        exit(1);
     }
 
-    openDescriptor(argv,&oldtio, &newtio, &fd); 
-    
-    while (STOP==FALSE) {           /* loop for input */
-      res = read(fd,&buf,1);       /* returns after 5 chars have been input */
-      printf(":%x:%d\n", buf & 0xff, res);
+    openDescriptor(argv, &oldtio, &newtio, &fd);
 
-      /* TODO: checa bits */ 
+    testFunction();
 
-      bytes = write(fd,buf,res); 	/* returns to the emissor the message*/
-      if (buf=='z') STOP=TRUE;
-    }
-
-
-    tcsetattr(fd,TCSANOW,&oldtio);
+    tcsetattr(fd, TCSANOW, &oldtio);
     sleep(1);
     close(fd);
     return 0;
+}
+
+
+void testFunction() {
+    char buf[MAX_SIZE];
+    int res;
+    int counter = 0;
+
+    while (STOP == FALSE || counter == 10) {           /* loop for input */
+        res = read(fd, buf, 255);       /* returns after 5 chars have been input */
+        print_hex(buf);
+        printf("writen %d bytes", res);
+        counter ++;
+        if (strcmp(buf, "z") == 0) STOP = TRUE;
+    }
 }

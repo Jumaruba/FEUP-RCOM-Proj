@@ -41,11 +41,10 @@
 #define ANS_REJ(n)              0x01 | BIT(n) 
 
 
-
+#define MAX_SIZE                255                 /* Max size of the package */
 
 /**
  * @brief Send a S (supervised) or U (non numerated) trama.
- * 
  * @param ADDR A, the address.
  * @param CMD C, the command.
  * @return int -1 on error, the number of characters transmited otherwise. 
@@ -53,11 +52,19 @@
 int send_SU(int fd, char ADDR, char CMD);   
 
 /**
- * @brief 
- * 
+ * @brief It opens the file and set the configurations to transmit the info.
+ * @param argv Stores the name of the file (e.g. /dev/ttyS10)
+ * @param oldtio Previous configurations of the transmission
+ * @param newtio New configurations of the transmission
+ * @param fd Number of the file descriptor
+ * @return Returns the file descriptor number
  */
-int openDescriptor(char** argv, struct termios* oldtio, struct termios* newtio, int *fd);  
+int openDescriptor(char** argv, struct termios* oldtio, struct termios* newtio, int *fd);
 
-
+/**
+ * @brief Prints a string in the hexadecimal form
+ * @param s String to be printed
+ */
+void print_hex(const char *s);
 
 #endif 

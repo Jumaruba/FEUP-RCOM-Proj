@@ -11,6 +11,10 @@
 #include <unistd.h>  
 #include "globals.h"
 
-volatile int STOP=FALSE; 
+volatile int STOP=FALSE;
 
+/**
+ * @brief Function to help with tests. It just prints what it's supposed to. In a near future will be deleted.
+ */
+void testFunction();
 #endif 
