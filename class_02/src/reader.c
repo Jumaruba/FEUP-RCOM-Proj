@@ -18,14 +18,67 @@ int main(int argc, char **argv) {
     linkLayer->fd = openDescriptor(linkLayer->port, &oldtio, &newtio); 
     printf("%d\n", fd);
 
-    testFunction();
-
+    read_SU(CMD_SET); 
+    
     tcsetattr(linkLayer->fd, TCSANOW, &oldtio);
     sleep(1);
     close(fd);
     return 0;
 }
 
+int read_SU(char CMD){
+    int curr_state = 0;            /* byte that is being read. From 0 to 4.*/  
+    char byte; 
+
+    while(curr_state < 5){
+        read(linkLayer->fd, &byte, 1);  
+
+        switch(curr_state){  
+            // RECEIVE FLAG
+            case 0: 
+                printf("case 0: %02x\n", byte); 
+                if (byte == FLAG) 
+                    curr_state++;   
+                break;  
+
+            // RECEIVE ADDR
+            case 1: 
+                printf("case 1: %02x\n", byte); 
+                if (byte == ADDR_CMD_EMI)
+                    curr_state++; 
+                else if (byte != FLAG) 
+                    curr_state = 0; 
+                break;  
+
+            // RECEIVE CMD 
+            case 2: 
+                printf("case 2: %02x\n", byte); 
+                if (byte == CMD)
+                    curr_state++; 
+                else if (byte == FLAG) 
+                    curr_state = 1; 
+                else curr_state = 0; 
+                break; 
+            // RECEIVE BCC 
+            case 3:  
+                printf("case 3: %02x\n", byte); 
+                if (byte == (CMD ^ ADDR_CMD_EMI))
+                    curr_state++; 
+                else if (byte == FLAG)
+                    curr_state = 1; 
+                else curr_state = 0; 
+                break; 
+
+            // RECEIVE FLAG
+            case 4:   
+                printf("case 4: %02x\n", byte); 
+                if (byte == FLAG)
+                    curr_state++; 
+                else curr_state = 0; 
+        } 
+    }
+    return 0; 
+}
 
 void testFunction() {
     char buf[MAX_SIZE];

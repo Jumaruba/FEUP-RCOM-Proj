@@ -14,6 +14,14 @@
 volatile int STOP = FALSE;
 
 /**
+ * @brief Read a supervision frame or a non enumerated frame.
+ * 
+ * @param CMD The command expected. 
+ * @return int 0 in case of sucess. 
+ */
+int read_SU(char CMD);  
+
+/**
  * @brief Function to help with tests. It just prints what it's supposed to. In a near future will be deleted.
  */
 void testFunction();
