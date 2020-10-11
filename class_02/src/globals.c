@@ -1,14 +1,14 @@
 #include "../include/globals.h"
 
 int send_SU(int fd, char ADDR, char CMD) {
-    char trama[5];
-    trama[0] = FLAG;
-    trama[1] = ADDR;
-    trama[2] = CMD;
-    trama[3] = trama[1] ^ trama[2];
-    trama[4] = FLAG;
+    char frame[5];
+    frame[0] = FLAG;
+    frame[1] = ADDR;
+    frame[2] = CMD;
+    frame[3] = frame[1] ^ frame[2];
+    frame[4] = FLAG;
 
-    int res = write(fd, trama, 5);
+    int res = write(fd, frame, 5);
     return res;
 }
 
@@ -16,6 +16,7 @@ int send_SU(int fd, char ADDR, char CMD) {
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio) {
     int fd = open(port, O_RDWR | O_NOCTTY);
     if (fd < 0) {
+        printf("%s\n", port);
         perror(port);
         exit(-1);
     }

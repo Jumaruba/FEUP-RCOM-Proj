@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 #define BAUDRATE B38400
@@ -49,7 +50,7 @@ typedef struct linkLayer
     int baudRate;                  /* Max vel of transmission*/
     unsigned int sequenceNumber;   /* Number of the frame sequence i = 0,1*/
     unsigned int timeout;          /* Value to wait for the answer*/
-    unsigned int numTransmissions; /* Number of tries until now to read a failed transmission*/
+    unsigned int numTransmissions; /* Number of tries for a filed transmission*/
 
     char frame[MAX_SIZE];          
 } LinkLayer; 
@@ -61,6 +62,7 @@ typedef struct linkLayer
  * @return int -1 on error, the number of characters transmited otherwise. 
  */
 int send_SU(int fd, char ADDR, char CMD);
+
 
 /**
  * @brief It opens the file and set the configurations to transmit the info.
@@ -76,5 +78,4 @@ int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
  * @param s String to be printed
  */
 void print_hex(const char *s);
-
 #endif

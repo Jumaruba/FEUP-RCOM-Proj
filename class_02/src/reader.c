@@ -16,10 +16,15 @@ int main(int argc, char **argv) {
     linkLayer = (LinkLayer*)malloc(sizeof(LinkLayer)); 
     memcpy(linkLayer->port, argv[1], strlen(argv[1])+1);
     linkLayer->fd = openDescriptor(linkLayer->port, &oldtio, &newtio); 
-    printf("%d\n", fd);
 
+    // SET TRANSMISSION 
     read_SU(CMD_SET); 
-    
+    printf("Received CMD_SET with success\n");
+
+    if (send_SU(linkLayer->fd, ADDR_ANS_REC, CMD_UA) <= 0)
+        printf("Error sending answer to the emissor\n"); 
+
+
     tcsetattr(linkLayer->fd, TCSANOW, &oldtio);
     sleep(1);
     close(fd);
@@ -29,10 +34,10 @@ int main(int argc, char **argv) {
 int read_SU(char CMD){
     int curr_state = 0;            /* byte that is being read. From 0 to 4.*/  
     char byte; 
-
+    sleep(7);
     while(curr_state < 5){
         read(linkLayer->fd, &byte, 1);  
-
+        // TODO: tratamento de erro do read? 
         switch(curr_state){  
             // RECEIVE FLAG
             case 0: 
