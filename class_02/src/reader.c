@@ -34,7 +34,6 @@ int main(int argc, char **argv) {
 int read_SU(char CMD){
     int curr_state = 0;            /* byte that is being read. From 0 to 4.*/  
     char byte; 
-    sleep(7);
     while(curr_state < 5){
         read(linkLayer->fd, &byte, 1);  
         // TODO: tratamento de erro do read? 

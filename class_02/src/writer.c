@@ -19,16 +19,23 @@ int main(int argc, char **argv)
     linkLayer = (LinkLayer *)malloc(sizeof(LinkLayer));
     memcpy(linkLayer->port, argv[1], strlen(argv[1]) + 1);
     linkLayer->fd = openDescriptor(linkLayer->port, &oldtio, &newtio);
-    printf("%d\n", linkLayer->fd);
     signal(SIGALRM, handle_alarm_timeout);
+    siginterrupt(SIGALRM, 1); 
 
     // INIT PROTOCOL
-    int curr_state;
+    int curr_state = 0; 
+    while(curr_state < 5){
+        alarm(3);
+        res = send_SU(linkLayer->fd, ADDR_CMD_EMI, CMD_SET);
+        printf("Written CMD_SET.\n", res);
+        curr_state = read_timeout_SU(CMD_UA);
+    } 
 
-    alarm(3);
-    res = send_SU(linkLayer->fd, ADDR_CMD_EMI, CMD_SET);
-    printf("%d bytes written\n", res);
-    curr_state = read_timeout_SU(CMD_UA);
+    if (curr_state == 5){
+        linkLayer->numTransmissions = 0;
+        alarm(0);
+        return 0; 
+    }
 
     // CLOSE
     if (tcsetattr(linkLayer->fd, TCSANOW, &oldtio) == -1)
@@ -45,10 +52,9 @@ int read_timeout_SU(char CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/
     char byte;
-    while (curr_state < 5 && linkLayer->numTransmissions < TRIES)
+    while (curr_state < 5)
     {   
-        
-        read(linkLayer->fd, &byte, 1);
+        if (read(linkLayer->fd, &byte, 1) == -1) return -1; 
         switch (curr_state)
         {
         // RECEIVE FLAG
@@ -91,21 +97,13 @@ int read_timeout_SU(char CMD)
         // RECEIVE FLAG
         case 4:
             printf("case 4: %02x\n", byte);
-            if (byte == FLAG)
-            {
+            if (byte == FLAG) {
                 curr_state++;
-                printf("Success in reading the CMD_UA\n");
+                printf("Success in reading the %x\n", CMD);
             }
             else
                 curr_state = 0;
         }
-    }
-
-    if (curr_state == 5){
-        linkLayer->numTransmissions = 0;
-        alarm(0);
-        printf("Success reading the %x frame\n", CMD); 
-        return 0; 
     }
 
     return curr_state;
@@ -114,12 +112,12 @@ int read_timeout_SU(char CMD)
 handle_alarm_timeout()
 {
     linkLayer->numTransmissions++;
-    alarm(3);
-    printf("Timeout %d\n", linkLayer->numTransmissions);
+    printf("Timeout #%d\n", linkLayer->numTransmissions);
 
     if (linkLayer->numTransmissions > TRIES)
     {
-        printf("Number of tries exceeded\n");
+        printf("Number of trie exceeded\n");
         exit(-1);
     }
+
 }
