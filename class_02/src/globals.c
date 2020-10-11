@@ -12,6 +12,14 @@ int send_SU(int fd, char ADDR, char CMD) {
     return res;
 }
 
+void printSuccess(char* text){
+    printf ("\033[32;1m SUCCESS: %s \033[0m\n", text);
+}
+
+void printError(char* text){
+    printf ("\033[31;1m FAILURE: %s \033[0m\n", text);
+}
+
 
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio) {
     int fd = open(port, O_RDWR | O_NOCTTY);

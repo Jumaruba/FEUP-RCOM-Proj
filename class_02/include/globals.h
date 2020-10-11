@@ -63,6 +63,9 @@ typedef struct linkLayer
  */
 int send_SU(int fd, char ADDR, char CMD);
 
+void printSuccess(char* text);
+
+void printError(char* text); 
 
 /**
  * @brief It opens the file and set the configurations to transmit the info.

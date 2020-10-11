@@ -20,14 +20,14 @@ int main(int argc, char **argv)
     memcpy(linkLayer->port, argv[1], strlen(argv[1]) + 1);
     linkLayer->fd = openDescriptor(linkLayer->port, &oldtio, &newtio);
     signal(SIGALRM, handle_alarm_timeout);
-    siginterrupt(SIGALRM, 1); 
+    siginterrupt(SIGALRM, 1);                   
 
     // INIT PROTOCOL
     int curr_state = 0; 
     while(curr_state < 5){
         alarm(3);
         res = send_SU(linkLayer->fd, ADDR_CMD_EMI, CMD_SET);
-        printf("Written CMD_SET.\n", res);
+        printSuccess("Written CMD_SET.");
         curr_state = read_timeout_SU(CMD_UA);
     } 
 
@@ -99,7 +99,11 @@ int read_timeout_SU(char CMD)
             printf("case 4: %02x\n", byte);
             if (byte == FLAG) {
                 curr_state++;
-                printf("Success in reading the %x\n", CMD);
+                
+                //Print Message.
+                char *aux; 
+                sprintf(aux, "Success reading %x\n", CMD); 
+                printSuccess(aux);
             }
             else
                 curr_state = 0;
@@ -112,11 +116,15 @@ int read_timeout_SU(char CMD)
 handle_alarm_timeout()
 {
     linkLayer->numTransmissions++;
-    printf("Timeout #%d\n", linkLayer->numTransmissions);
+
+    //Print message. 
+    char * aux; 
+    sprintf(aux, "Timeout #%d", linkLayer->numTransmissions); 
+    printError(aux);
 
     if (linkLayer->numTransmissions > TRIES)
     {
-        printf("Number of trie exceeded\n");
+        printError("Number of tries exceeded");
         exit(-1);
     }
 
