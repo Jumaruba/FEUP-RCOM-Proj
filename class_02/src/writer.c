@@ -2,9 +2,8 @@
 
 #include "../include/writer.h"
 
-int fd;
 struct termios oldtio, newtio;
-
+LinkLayer * linkLayer; 
 int main(int argc, char **argv) {
     int res;
     if ((argc < 2) ||
@@ -13,19 +12,23 @@ int main(int argc, char **argv) {
         printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
         exit(1);
     }
+    
+    linkLayer = (LinkLayer*)malloc(sizeof(LinkLayer)); 
+    memcpy(linkLayer->port, argv[1], strlen(argv[1])+1);
+    linkLayer->fd = openDescriptor(linkLayer->port, &oldtio, &newtio);
+    printf("%d\n", linkLayer->fd);
+    
 
-    openDescriptor(argv, &oldtio, &newtio, &fd);
-
-    res = send_SU(fd, ADDR_ANS_EMI, CMD_SET);
+    res = send_SU(linkLayer->fd, ADDR_CMD_EMI, CMD_SET);
     printf("%d bytes written\n", res);
 
 
-    if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
+    if (tcsetattr(linkLayer->fd, TCSANOW, &oldtio) == -1) {
         perror("tcsetattr");
         exit(-1);
     }
 
-    close(fd);
+    close(linkLayer->fd);
     return 0;
 }
 
