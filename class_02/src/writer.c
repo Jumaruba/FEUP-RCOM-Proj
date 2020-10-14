@@ -8,8 +8,8 @@ int main(int argc, char **argv)
 {
     int res;
     if ((argc < 2) ||
-        ((strcmp("/dev/ttyS10", argv[1]) != 0) &&
-         (strcmp("/dev/ttyS11", argv[1]) != 0)))
+        ((strcmp("/dev/ttyS0", argv[1]) != 0) &&
+         (strcmp("/dev/ttyS1", argv[1]) != 0)))
     {
         printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
         exit(1);
@@ -100,10 +100,7 @@ int read_timeout_SU(char CMD)
             if (byte == FLAG) {
                 curr_state++;
                 
-                //Print Message.
-                char *aux; 
-                sprintf(aux, "Success reading %x\n", CMD); 
-                printSuccess(aux);
+                printf("Success reading %x\n", CMD);
             }
             else
                 curr_state = 0;
@@ -117,14 +114,11 @@ handle_alarm_timeout()
 {
     linkLayer->numTransmissions++;
 
-    //Print message. 
-    char * aux; 
-    sprintf(aux, "Timeout #%d", linkLayer->numTransmissions); 
-    printError(aux);
+    printf("Time out #%d\n", linkLayer->numTransmissions);
 
     if (linkLayer->numTransmissions > TRIES)
     {
-        printError("Number of tries exceeded");
+        printf("Number of tries exceeded\n");
         exit(-1);
     }
 
