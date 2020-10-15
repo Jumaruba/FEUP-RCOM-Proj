@@ -10,6 +10,13 @@ int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio
     }
     else if (RECEPTOR == flag){
         fd = openDescriptor(port, oldtio, newtio); 
+
+        // SEND FRAME
+        read_SU(fd, CMD_SET); 
+        printf("Received CMD_SET with success\n");
+
+        if (send_SU(fd, ADDR_ANS_REC, CMD_UA) <= 0)
+            printf("Error sending answer to the emissor\n"); 
     }
     return fd;
 }

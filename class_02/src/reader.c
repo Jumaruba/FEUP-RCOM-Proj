@@ -16,13 +16,6 @@ int main(int argc, char **argv) {
     linkLayer = (LinkLayer*)malloc(sizeof(LinkLayer)); 
     fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio);
 
-    // SET TRANSMISSION 
-    read_SU(fd, CMD_SET); 
-    printf("Received CMD_SET with success\n");
-
-    if (send_SU(fd, ADDR_ANS_REC, CMD_UA) <= 0)
-        printf("Error sending answer to the emissor\n"); 
-
 
     tcsetattr(fd, TCSANOW, &oldtio);
     sleep(1);
