@@ -8,7 +8,9 @@ int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio
     if (TRANSMITTER == flag){
         fd = openDescriptor(port, oldtio, newtio); 
     }
-
+    else if (RECEPTOR == flag){
+        fd = openDescriptor(port, oldtio, newtio); 
+    }
     return fd;
 }
 
