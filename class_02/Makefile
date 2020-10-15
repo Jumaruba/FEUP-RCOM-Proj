@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall  
 
 SRC_DIR = ./src 
-COMMON_SRCS := globals.c  
+COMMON_SRCS := link_layer.c
 COMMON_SRC_OBJ = $(COMMON_SRCS:%.c=%.o)  					# common .o files 
 
 MAIN_SRCS := reader.c writer.c  

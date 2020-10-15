@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include "globals.h" 
+#include "link_layer.h" 
 
 volatile int STOP = FALSE;
 

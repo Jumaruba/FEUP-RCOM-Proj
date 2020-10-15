@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "globals.h"
+#include "link_layer.h"
 
 volatile int STOP = FALSE;
 
