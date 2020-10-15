@@ -18,7 +18,7 @@
 
 int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio); 
 
-int llwrite(int fd, char * buffer, int length); 
+int llwrite(int fd, char * data, int *length); 
 
 int llread(); 
 
@@ -27,9 +27,13 @@ int llclose();
 
 int send_frame_su(int fd, char ADDR, char CMD);
 
+int send_frame_i(int fd, char ADDR, char CMD, char * info); 
+
 int read_frame_su(int fd, char CMD);  
 
 int read_timeout_frame_su(int fd, char CMD);   
+
+int read_timeout_frame_i(int fd, char CMD); 
 
 int create_frame_i(char * data, char * frame, int data_length, char CMD); 
 

@@ -17,8 +17,14 @@ int main(int argc, char **argv)
     }
 
     // SET CHANNEL 
-    fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio); 
-                
+ //   fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio); 
+
+    char * data = (char*)malloc(sizeof(char)*3); 
+    data[0] = 0x01; 
+    data[1] = ESC; 
+    data[2] = ESC; 
+    int length = 3; 
+    llwrite(1, data, &length); 
 
     // CLOSE
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1)

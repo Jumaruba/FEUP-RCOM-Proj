@@ -41,23 +41,29 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
     return fd;
 }
 
-int llwrite(int fd, char *data, int data_length)
+int llwrite(int fd, char *data, int *data_length)
 {
     char * frame; 
-    int frame_length = data_length + 6;  
+    int frame_length = *data_length + 6;  
+    int curr_state = 0 ; 
 
-    if (data_length < 0)
+    if (*data_length < 0)
     {
         printf("Length must be positive");
         return -1;
     }
 
     // Creating the info to send
-    frame = (char *)malloc(sizeof(char)*frame_length); 
-    create_frame_i(data, frame, data_length, CMD_S0); 
-    byte_stuffing(frame, frame_length);
+    frame = (char *)malloc(sizeof(char)*frame_length);  
+    create_frame_i(data, frame, *data_length, CMD_S0);  
 
+    byte_stuffing(frame, &frame_length);
 
+    printf("here\n");
+
+    for (int i = 0 ; i < frame_length; i++){
+        printf("%02x\n", frame[i]); 
+    }
 
 
 }
@@ -75,6 +81,10 @@ int send_frame_su(int fd, char ADDR, char CMD)
     return res;
 }
 
+int send_frame_i(int fd, char ADDR, char CMD, char * info){
+
+}
+ 
 int read_frame_su(int fd, char CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/
@@ -197,6 +207,10 @@ int read_timeout_frame_su(int fd, char CMD)
     return curr_state;
 }
 
+int read_timeout_frame_i(int fd, char CMD){
+
+}
+
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
 {
     int fd = open(port, O_RDWR | O_NOCTTY);
@@ -239,18 +253,20 @@ int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
 
 int create_frame_i(char *data, char *frame, int data_length, char CMD)
 {
+
     char BCC2 = 0x00; 
     frame[0] = FLAG;
     frame[1] = ADDR_CMD_EMI;
-    frame[2] = CMD;
+    frame[2] = CMD; 
     frame[3] = frame[1]^frame[2];  
-    
     // BCC 
-    memcpy(&frame[4], data, data_length);   
-    create_BCC2(data, &BCC2, data_length);  
-    frame[4 + data_length] = BCC2;  
+    memcpy(&frame[4], data, data_length);    
 
-    frame[5 + data_length] = FLAG;  
+    create_BCC2(data, &BCC2, data_length);   
+
+    frame[4 + data_length] = BCC2;  
+    frame[5 + data_length] = FLAG;   
+
 
 }
 
