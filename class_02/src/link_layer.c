@@ -7,12 +7,14 @@ int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio
     int fd; 
     if (TRANSMITTER == flag){
         fd = openDescriptor(port, oldtio, newtio); 
+
+        
     }
     else if (RECEPTOR == flag){
         fd = openDescriptor(port, oldtio, newtio); 
 
         // SEND FRAME
-        read_SU(fd, CMD_SET); 
+        read_frame_su(fd, CMD_SET); 
         printf("Received CMD_SET with success\n");
 
         if (send_SU(fd, ADDR_ANS_REC, CMD_UA) <= 0)
@@ -34,7 +36,7 @@ int send_SU(int fd, char ADDR, char CMD) {
     return res;
 }
 
-int read_SU(int fd, char CMD){
+int read_frame_su(int fd, char CMD){
     int curr_state = 0;            /* byte that is being read. From 0 to 4.*/  
     char byte; 
     while(curr_state < 5){

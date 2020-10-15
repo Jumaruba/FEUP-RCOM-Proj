@@ -43,11 +43,9 @@ int send_SU(int fd, char ADDR, char CMD);
  * @param CMD The command expected. 
  * @return int 0 in case of sucess. 
  */
-int read_SU(int fd, char CMD);  
+int read_frame_su(int fd, char CMD);  
 
-void printSuccess(char* text);
 
-void printError(char* text); 
 
 /**
  * @brief It opens the file and set the configurations to transmit the info.
@@ -63,4 +61,8 @@ int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
  * @param s String to be printed
  */
 void print_hex(const char *s);
+
+void printSuccess(char* text);
+
+void printError(char* text); 
 #endif

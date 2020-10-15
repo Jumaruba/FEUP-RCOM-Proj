@@ -5,6 +5,7 @@
 struct termios oldtio, newtio;
 LinkLayer *linkLayer;
 int fd; 
+int numTransmissions = 0;
 int main(int argc, char **argv)
 {
     int res;
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
     } 
 
     if (curr_state == 5){
-        linkLayer->numTransmissions = 0;
+        numTransmissions = 0;
         alarm(0);
         return 0; 
     }
@@ -114,11 +115,11 @@ int read_timeout_SU(char CMD)
 
 handle_alarm_timeout()
 {
-    linkLayer->numTransmissions++;
+    numTransmissions++;
 
-    printf("Time out #%d\n", linkLayer->numTransmissions);
+    printf("Time out #%d\n", numTransmissions);
 
-    if (linkLayer->numTransmissions > TRIES)
+    if (numTransmissions > TRIES)
     {
         printf("Number of tries exceeded\n");
         exit(-1);

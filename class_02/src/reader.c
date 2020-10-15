@@ -4,7 +4,6 @@
 
 int fd;
 struct termios oldtio, newtio; 
-LinkLayer * linkLayer; 
 int main(int argc, char **argv) { 
     if ((argc < 2) ||
         ((strcmp("/dev/ttyS10", argv[1]) != 0) &&
@@ -13,7 +12,6 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    linkLayer = (LinkLayer*)malloc(sizeof(LinkLayer)); 
     fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio);
 
 
