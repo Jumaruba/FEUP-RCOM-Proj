@@ -1,5 +1,6 @@
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
+
 #define _POSIX_SOURCE 1
 #define FALSE 0
 #define TRUE 1
@@ -7,17 +8,23 @@
 
 #define BIT(n) 1 << n
 
-/* Macros for the llopen */ 
+
+/* MACROS FOR THE LLOPEN FLAG ------------------------------------------------------*/  
+
 #define TRANSMITTER         0
 #define RECEPTOR            1 
+
+/* MACROS FOR THE ALARM ----------------------------------------------------------- */  
 
 #define TRIES           3               /* Tries to read the receptor answers*/ 
 #define TIMEOUT         3               /* Time to wait for the receptor answers*/
 
 
-/* MACROS FOR THE PROTOCOL*/
+/* MACROS FOR THE PROTOCOL----------------------------------------------------------*/
 
 #define FLAG 0x7E
+#define ESC 0x7D
+#define XOR_STUFFING(N)     (N^0x20)
 
 /*Address Field*/
 

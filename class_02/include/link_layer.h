@@ -31,12 +31,15 @@ int read_frame_su(int fd, char CMD);
 
 int read_timeout_frame_su(int fd, char CMD);   
 
-int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
-
 int create_frame_i(char * data, char * frame, int data_length, char CMD); 
-int byte_stuffing(); 
+
+int byte_stuffing(char * frame, int *frame_length); 
+
+int byte_destuffing(char * frame, int * frame_length);
 
 void create_BCC2(char * data, char *buffer, int data_length); 
+
+int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
 
 /* ALARM -----------------------------------------------------------------------*/ 
 

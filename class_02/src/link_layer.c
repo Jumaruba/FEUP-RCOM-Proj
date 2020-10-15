@@ -41,15 +41,25 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
     return fd;
 }
 
-int llwrite(int fd, char *buffer, int length)
+int llwrite(int fd, char *data, int data_length)
 {
-    if (length < 0)
+    char * frame; 
+    int frame_length = data_length + 6;  
+
+    if (data_length < 0)
     {
         printf("Length must be positive");
         return -1;
     }
 
     // Creating the info to send
+    frame = (char *)malloc(sizeof(char)*frame_length); 
+    create_frame_i(data, frame, data_length, CMD_S0); 
+    byte_stuffing(frame, frame_length);
+
+
+
+
 }
 
 int send_frame_su(int fd, char ADDR, char CMD)
@@ -235,9 +245,11 @@ int create_frame_i(char *data, char *frame, int data_length, char CMD)
     frame[2] = CMD;
     frame[3] = frame[1]^frame[2];  
     
+    // BCC 
     memcpy(&frame[4], data, data_length);   
     create_BCC2(data, &BCC2, data_length);  
     frame[4 + data_length] = BCC2;  
+
     frame[5 + data_length] = FLAG;  
 
 }
@@ -248,8 +260,71 @@ void create_BCC2(char * data, char* buffer, int data_length)
         *buffer ^= data[i]; 
     }
 }
-int byte_stuffing()
-{
+
+int byte_stuffing(char * frame, int* frame_length)
+{ 
+    char * new_frame ;      
+    int extra_space = 0;        /* The extra space needed to be added. */
+    int new_frame_length = 0;   /* The new length of the string frame. */ 
+    int actual_pos = 0;         /* Position in the new_frame. */ 
+    int counter = 0;            
+
+    //  First find all the flags and scapes to avoid multiple reallocs. 
+    for (int i = 0 ; i < *frame_length; i++)
+        if (frame[i] == FLAG || frame[i] == ESC) extra_space++;  
+
+
+    new_frame_length = extra_space + *frame_length;  
+    new_frame = (char *)malloc(sizeof(char) * new_frame_length);     
+
+    for (int i = 0 ; i< *frame_length; i++){  
+        actual_pos = i + counter; 
+        if (frame[i] == FLAG){    
+            new_frame[actual_pos] =  ESC; 
+            new_frame[actual_pos+1] = XOR_STUFFING(FLAG);  
+
+            counter ++; 
+        }
+        else if (frame[i] == ESC){
+            new_frame[actual_pos] = ESC; 
+            new_frame[actual_pos+1] = XOR_STUFFING(ESC); 
+
+            counter ++; 
+        } 
+        else new_frame[actual_pos] = frame[i];  
+    } 
+
+
+    frame = realloc(frame, new_frame_length); 
+    * frame_length  = new_frame_length;
+
+    memcpy(frame, new_frame, new_frame_length); 
+    free(new_frame);
+    return 0; 
+}
+
+int byte_destuffing(char * frame, int * frame_length){
+    
+    int new_frame_pos = 0;  
+    char * new_frame = (char*)malloc(sizeof(char)*(*frame_length));   
+
+    for (int i = 0 ; i < *frame_length; i++){
+        if (frame[i] == ESC){
+            if (frame[i+1] == XOR_STUFFING(FLAG))
+                new_frame[new_frame_pos] = FLAG; 
+            else if (frame[i+1] == XOR_STUFFING(ESC))
+                new_frame[new_frame_pos] = ESC;  
+
+            i++;  
+        } 
+        else new_frame[new_frame_pos] = frame[i]; 
+        new_frame_pos ++;
+    } 
+
+
+    memcpy(frame, new_frame, new_frame_pos); 
+    *frame_length = new_frame_pos;
+    free(new_frame); 
 }
 
 handle_alarm_timeout()
