@@ -32,6 +32,10 @@
 #define CMD_SET         0x03    /* SET command*/
 #define CMD_DISC        0x0B    /* DISC command*/
 #define CMD_UA          0x07    /* UA command*/ 
+
+
+#define CMD_S1          0x40    /* S N(1)*/  
+#define CMD_S0          0x00    /* S N(0)*/ 
 #define CMD_RR1         0x85    /* RR*/ 
 #define CMD_RR0         0x05    /* RR*/ 
 #define CMD_REJ1        0x81    /* REJ*/ 

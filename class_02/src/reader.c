@@ -13,8 +13,10 @@ int main(int argc, char **argv) {
     }        
 
     // SET CHANNEL
-    fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio);
-
+    //fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio);
+    char * frame; 
+    read(fd, frame, 255); 
+    printf("%s\n", frame); 
 
     tcsetattr(fd, TCSANOW, &oldtio);
     sleep(1);

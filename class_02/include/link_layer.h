@@ -18,37 +18,30 @@
 
 int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio); 
 
+int llwrite(int fd, char * buffer, int length); 
 
-/**
- * @brief Send a S (supervised) or U (non numerated) trama.
- * @param ADDR A, the address.
- * @param CMD C, the command.
- * @return int -1 on error, the number of characters transmited otherwise. 
- */
+int llread(); 
+
+int llclose(); 
+/* AUX API -------------------------------------------------------------------*/ 
+
 int send_frame_su(int fd, char ADDR, char CMD);
-
 
 int read_frame_su(int fd, char CMD);  
 
 int read_timeout_frame_su(int fd, char CMD);   
 
-
-/**
- * @brief It opens the file and set the configurations to transmit the info.
- * @param port Stores the name of the file (e.g. /dev/ttyS10)
- * @param oldtio Previous configurations of the transmission
- * @param newtio New configurations of the transmission
- * @return Returns the file descriptor number
- */
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
 
+int create_frame_i(char * data, char * frame, int data_length, char CMD); 
+int byte_stuffing(); 
 
+void create_BCC2(char * data, char *buffer, int data_length); 
 
-/**
- * @brief Construct a new handle alarm timeout object
- * 
- */
+/* ALARM -----------------------------------------------------------------------*/ 
+
 int handle_alarm_timeout(); 
 
- 
+void alarm_off(); 
+
 #endif
