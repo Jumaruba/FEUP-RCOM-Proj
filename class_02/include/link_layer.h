@@ -8,21 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
 #include "macros.h"
 
 
-typedef struct linkLayer
-{
-    char port[20];                 /* Trasnmission port /dev/ttySx, x = 0, 1*/
-    int fd;                        /* File descritor*/ 
-    int baudRate;                  /* Max vel of transmission*/
-    unsigned int sequenceNumber;   /* Number of the frame sequence i = 0,1*/
-    unsigned int timeout;          /* Value to wait for the answer*/
-    unsigned int numTransmissions; /* Number of tries for a filed transmission*/
-
-    char frame[MAX_SIZE];          
-} LinkLayer; 
-
+ 
 
 /* API -----------------------------------------------------------------------*/ 
 
@@ -35,16 +25,12 @@ int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio
  * @param CMD C, the command.
  * @return int -1 on error, the number of characters transmited otherwise. 
  */
-int send_SU(int fd, char ADDR, char CMD);
+int send_frame_su(int fd, char ADDR, char CMD);
 
-/**
- * @brief Read a supervision frame or a non enumerated frame.
- * 
- * @param CMD The command expected. 
- * @return int 0 in case of sucess. 
- */
+
 int read_frame_su(int fd, char CMD);  
 
+int read_timeout_frame_su(int fd, char CMD);   
 
 
 /**
@@ -61,6 +47,13 @@ int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
  * @param s String to be printed
  */
 void print_hex(const char *s);
+
+/**
+ * @brief Construct a new handle alarm timeout object
+ * 
+ */
+int handle_alarm_timeout(); 
+
 
 void printSuccess(char* text);
 
