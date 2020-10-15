@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio);
 
     // SET TRANSMISSION 
-    read_SU(CMD_SET); 
+    read_SU(fd, CMD_SET); 
     printf("Received CMD_SET with success\n");
 
     if (send_SU(fd, ADDR_ANS_REC, CMD_UA) <= 0)
@@ -30,68 +30,3 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-int read_SU(char CMD){
-    int curr_state = 0;            /* byte that is being read. From 0 to 4.*/  
-    char byte; 
-    while(curr_state < 5){
-        read(fd, &byte, 1);  
-        switch(curr_state){  
-            // RECEIVE FLAG
-            case 0: 
-                printf("case 0: %02x\n", byte); 
-                if (byte == FLAG) 
-                    curr_state++;   
-                break;  
-
-            // RECEIVE ADDR
-            case 1: 
-                printf("case 1: %02x\n", byte); 
-                if (byte == ADDR_CMD_EMI)
-                    curr_state++; 
-                else if (byte != FLAG) 
-                    curr_state = 0; 
-                break;  
-
-            // RECEIVE CMD 
-            case 2: 
-                printf("case 2: %02x\n", byte); 
-                if (byte == CMD)
-                    curr_state++; 
-                else if (byte == FLAG) 
-                    curr_state = 1; 
-                else curr_state = 0; 
-                break; 
-            // RECEIVE BCC 
-            case 3:  
-                printf("case 3: %02x\n", byte); 
-                if (byte == (CMD ^ ADDR_CMD_EMI))
-                    curr_state++; 
-                else if (byte == FLAG)
-                    curr_state = 1; 
-                else curr_state = 0; 
-                break; 
-
-            // RECEIVE FLAG
-            case 4:   
-                printf("case 4: %02x\n", byte); 
-                if (byte == FLAG)
-                    curr_state++; 
-                else curr_state = 0; 
-        } 
-    }
-    return 0; 
-}
-
-void testFunction() {
-    char buf[MAX_SIZE];
-    int res;
-    int counter = 0;
-    int fd = linkLayer->fd; 
-    while (STOP == FALSE || counter == 10) {           /* loop for input */
-        res = read(fd, buf, 255);       /* returns after 5 chars have been input */
-        print_hex(buf);
-        printf("writen %d bytes\n", res);
-        counter ++;
-        if (strcmp(buf, "z") == 0) STOP = TRUE;
-    }
-}

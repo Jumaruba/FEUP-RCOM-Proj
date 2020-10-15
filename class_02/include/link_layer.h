@@ -37,6 +37,14 @@ int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio
  */
 int send_SU(int fd, char ADDR, char CMD);
 
+/**
+ * @brief Read a supervision frame or a non enumerated frame.
+ * 
+ * @param CMD The command expected. 
+ * @return int 0 in case of sucess. 
+ */
+int read_SU(int fd, char CMD);  
+
 void printSuccess(char* text);
 
 void printError(char* text); 

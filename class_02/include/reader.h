@@ -19,7 +19,7 @@ volatile int STOP = FALSE;
  * @param CMD The command expected. 
  * @return int 0 in case of sucess. 
  */
-int read_SU(char CMD);  
+int read_SU(int fd, char CMD);  
 
 /**
  * @brief Function to help with tests. It just prints what it's supposed to. In a near future will be deleted.
