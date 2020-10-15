@@ -4,6 +4,7 @@
 
 struct termios oldtio, newtio;
 LinkLayer *linkLayer;
+int fd; 
 int main(int argc, char **argv)
 {
     int res;
@@ -16,9 +17,9 @@ int main(int argc, char **argv)
     }
 
     // SET CONFIGS
-    linkLayer = (LinkLayer *)malloc(sizeof(LinkLayer));
-    memcpy(linkLayer->port, argv[1], strlen(argv[1]) + 1);
-    linkLayer->fd = openDescriptor(linkLayer->port, &oldtio, &newtio);
+
+    linkLayer = (LinkLayer*)malloc(sizeof(LinkLayer)); 
+    fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio); 
     signal(SIGALRM, handle_alarm_timeout);
     siginterrupt(SIGALRM, 1);                   
 
@@ -26,7 +27,7 @@ int main(int argc, char **argv)
     int curr_state = 0; 
     while(curr_state < 5){
         alarm(3);
-        res = send_SU(linkLayer->fd, ADDR_CMD_EMI, CMD_SET);
+        res = send_SU(fd, ADDR_CMD_EMI, CMD_SET);
         printSuccess("Written CMD_SET.");
         curr_state = read_timeout_SU(CMD_UA);
     } 
@@ -38,13 +39,13 @@ int main(int argc, char **argv)
     }
 
     // CLOSE
-    if (tcsetattr(linkLayer->fd, TCSANOW, &oldtio) == -1)
+    if (tcsetattr(fd, TCSANOW, &oldtio) == -1)
     {
         perror("tcsetattr");
         exit(-1);
     }
 
-    close(linkLayer->fd);
+    close(fd);
     return 0;
 }
 
@@ -55,7 +56,7 @@ int read_timeout_SU(char CMD)
     char byte;
     while (curr_state < 5)
     {   
-        if (read(linkLayer->fd, &byte, 1) == -1) return -1; 
+        if (read(fd, &byte, 1) == -1) return -1; 
         switch (curr_state)
         {
         // RECEIVE FLAG
