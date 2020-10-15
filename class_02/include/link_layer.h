@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include "macros.h"
-
+#include "utils.h"
 
  
 
@@ -42,11 +42,7 @@ int read_timeout_frame_su(int fd, char CMD);
  */
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
 
-/**
- * @brief Prints a string in the hexadecimal form
- * @param s String to be printed
- */
-void print_hex(const char *s);
+
 
 /**
  * @brief Construct a new handle alarm timeout object
@@ -54,8 +50,5 @@ void print_hex(const char *s);
  */
 int handle_alarm_timeout(); 
 
-
-void printSuccess(char* text);
-
-void printError(char* text); 
+ 
 #endif

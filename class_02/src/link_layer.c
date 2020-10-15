@@ -166,13 +166,7 @@ int read_timeout_frame_su(int fd, char CMD)
 
     return curr_state;
 }
-void printSuccess(char* text){
-    printf ("\033[32;1m SUCCESS: %s \033[0m\n", text);
-}
 
-void printError(char* text){
-    printf ("\033[31;1m FAILURE: %s \033[0m\n", text);
-}
 
 
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio) {
@@ -226,8 +220,3 @@ handle_alarm_timeout()
 
 }
 
-void print_hex(const char *s) {
-    while (*s)
-        printf("%02x", (unsigned int) *s++);
-    printf("\n");
-}
