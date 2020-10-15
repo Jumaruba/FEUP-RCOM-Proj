@@ -13,6 +13,16 @@
 #include "utils.h"
 
  
+typedef enum STATES{
+    START_STATE,
+    FLAG_STATE, 
+    ADDR_STATE, 
+    CMD_STATE, 
+    BBC1_STATE, 
+    INFO_STATE, 
+    SEVEND_STATE, 
+    BBC2_STATE, 
+} ;
 
 /* API -----------------------------------------------------------------------*/ 
 
@@ -23,11 +33,12 @@ int llwrite(int fd, char * data, int *length);
 int llread(); 
 
 int llclose(); 
+
 /* AUX API -------------------------------------------------------------------*/ 
 
 int send_frame_su(int fd, char ADDR, char CMD);
 
-int send_frame_i(int fd, char ADDR, char CMD, char * info); 
+inline int send_frame_i(int fd, char * frame, int frame_length); 
 
 int read_frame_su(int fd, char CMD);  
 

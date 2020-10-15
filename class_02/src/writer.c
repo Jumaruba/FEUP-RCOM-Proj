@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     data[2] = ESC; 
     int length = 3; 
     llwrite(1, data, &length); 
-
+    return 0; 
     // CLOSE
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1)
     {

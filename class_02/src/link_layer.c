@@ -44,28 +44,21 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
 int llwrite(int fd, char *data, int *data_length)
 {
     char * frame; 
-    int frame_length = *data_length + 6;  
     int curr_state = 0 ; 
 
-    if (*data_length < 0)
-    {
+    if (*data_length < 0) {
         printf("Length must be positive");
         return -1;
     }
 
     // Creating the info to send
-    frame = (char *)malloc(sizeof(char)*frame_length);  
-    create_frame_i(data, frame, *data_length, CMD_S0);  
-
-    byte_stuffing(frame, &frame_length);
-
-    printf("here\n");
-
-    for (int i = 0 ; i < frame_length; i++){
-        printf("%02x\n", frame[i]); 
-    }
+    int frame_length = create_frame_i(data, frame, *data_length, CMD_S0);  
 
 
+    
+}
+
+int llread(int fd, char * buffer){
 }
 
 int send_frame_su(int fd, char ADDR, char CMD)
@@ -81,8 +74,8 @@ int send_frame_su(int fd, char ADDR, char CMD)
     return res;
 }
 
-int send_frame_i(int fd, char ADDR, char CMD, char * info){
-
+inline int send_frame_i(int fd, char* frame, int frame_length){
+    return write(fd, frame, frame_length); 
 }
  
 int read_frame_su(int fd, char CMD)
@@ -211,6 +204,7 @@ int read_timeout_frame_i(int fd, char CMD){
 
 }
 
+
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
 {
     int fd = open(port, O_RDWR | O_NOCTTY);
@@ -252,29 +246,40 @@ int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
 }
 
 int create_frame_i(char *data, char *frame, int data_length, char CMD)
-{
+{ 
+    int frame_length = 0;  
 
-    char BCC2 = 0x00; 
+    // Stuffing bcc and data.  
+    char *BCC2 = (char*)malloc(sizeof(char)); 
+    BCC2[0] = 0x00; 
+    int bcc_length = 1;  
+
+    create_BCC2(data, BCC2, data_length);  
+    byte_stuffing(data, &data_length);  
+    byte_stuffing(BCC2, &bcc_length);   
+
+    // Store information 
+    frame_length = 5  + bcc_length + data_length;  
+    frame = (char*) malloc(sizeof(char)* frame_length); 
+
     frame[0] = FLAG;
     frame[1] = ADDR_CMD_EMI;
     frame[2] = CMD; 
     frame[3] = frame[1]^frame[2];  
     // BCC 
     memcpy(&frame[4], data, data_length);    
+    memcpy(&frame[4 + data_length], BCC2, bcc_length); 
 
-    create_BCC2(data, &BCC2, data_length);   
+    frame[frame_length-1] = FLAG;   
 
-    frame[4 + data_length] = BCC2;  
-    frame[5 + data_length] = FLAG;   
-
-
+    return frame_length; 
 }
 
 void create_BCC2(char * data, char* buffer, int data_length)
 {
     for (int i = 0 ; i < data_length; i++){
         *buffer ^= data[i]; 
-    }
+    } 
 }
 
 int byte_stuffing(char * frame, int* frame_length)
