@@ -7,7 +7,7 @@
 #define BYTE 1
 
 #define BIT(n) 1 << n
-
+#define MAX_SIZE_ARRAY 16383    // Should be 2^16-1, but using less to avoid overflow
 
 /* MACROS FOR THE LLOPEN FLAG ------------------------------------------------------*/  
 
@@ -28,11 +28,7 @@
 
 /*Address Field*/
 
-#define ADDR_CMD_EMI    0x03    /* Command sent by the emissor*/
-#define ADDR_ANS_EMI    0x01    /* Answer sent by the receptor*/
-
-#define ADDR_CMD_REC    0x01    /* Command sent by the emissor*/
-#define ADDR_ANS_REC    0x03    /* Aswser sent by the receptor*/
+#define A               0x03    
 
 /**Command Field*/
 

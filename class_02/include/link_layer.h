@@ -28,9 +28,9 @@ typedef enum STATES{
 
 int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio); 
 
-int llwrite(int fd, char * data, int *length); 
+int llwrite(int fd, char * data, int *data_length); 
 
-int llread(); 
+int llread(int fd, char * buffer, char CMD_expected); 
 
 int llclose(); 
 

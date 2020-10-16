@@ -18,7 +18,7 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
         while (curr_state < 5)
         {
             alarm(3);
-            int res = send_frame_su(fd, ADDR_CMD_EMI, CMD_SET);
+            int res = send_frame_su(fd, A, CMD_SET);
             printSuccess("Written CMD_SET.");
             curr_state = read_timeout_frame_su(fd, CMD_UA);
         }
@@ -35,7 +35,7 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
         read_frame_su(fd, CMD_SET);
         printf("Received CMD_SET with success\n");
 
-        if (send_frame_su(fd, ADDR_ANS_REC, CMD_UA) <= 0)
+        if (send_frame_su(fd, A, CMD_UA) <= 0)
             printf("Error sending answer to the emissor\n");
     }
     return fd;
@@ -43,7 +43,7 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
 
 int llwrite(int fd, char *data, int *data_length)
 {
-    char * frame; 
+    char * frame  = (char*) malloc(MAX_SIZE_ARRAY*sizeof(char));
     int curr_state = 0 ; 
 
     if (*data_length < 0) {
@@ -52,13 +52,79 @@ int llwrite(int fd, char *data, int *data_length)
     }
 
     // Creating the info to send
-    int frame_length = create_frame_i(data, frame, *data_length, CMD_S0);  
+    int frame_length = create_frame_i(data, frame, *data_length, CMD_S0);   
 
-
+    for (int i = 0 ; i <  frame_length; i++)
+        printf("%02x\n", frame[i]); 
+    write(fd, frame, frame_length); 
     
 }
 
-int llread(int fd, char * buffer){
+int llread(int fd, char * buffer, char  CMD_expected){  
+    int curr_state= 0, info_length = -1; 
+
+    char byte; 
+
+    while(curr_state < 5){
+        read(fd, &byte, BYTE); 
+
+        switch (curr_state)
+        { 
+            // RECEIVE FLAG
+            case 0: 
+                info_length = 0; 
+                printf("case 0: %02x\n", byte);
+                if (FLAG == byte) 
+                    curr_state ++;  
+                break; 
+            // RECEIVE ADDR 
+            case 1: 
+                printf("case 1: %02x\n", byte); 
+                if (A == byte)
+                    curr_state ++; 
+                else if (FLAG != byte) 
+                    curr_state = 0;  
+                
+                break; 
+
+            // RECEIVE CMD
+            case 2: 
+                printf("case 2: %02x\n", byte);  
+                if (byte == CMD_expected)
+                    curr_state++;
+                else if (byte == FLAG) 
+                    curr_state = 1; 
+                else curr_state = 0;
+
+                break; 
+
+            // RECEIVE BCC1
+            case 3: 
+                printf("case 3: %02x\n", byte);    
+                if (byte == (CMD_expected ^ A))
+                    curr_state ++; 
+                else if (byte == FLAG) 
+                    curr_state = 1; 
+                else if (CMD_expected == CMD_S0){
+                    send_frame_su(fd, A, CMD_REJ1); 
+                    curr_state = 0; 
+                }
+                else if (CMD_expected == CMD_S1){
+                    send_frame_su(fd, A, CMD_REJ0);  
+                    curr_state = 0; 
+                } 
+                break;
+            // RECEIVE INFO 
+            case 4:
+                printf("case 4: %02x\n", byte);
+                if (byte != FLAG){
+                    buffer[info_length++] = byte;  
+                }
+                else curr_state ++; 
+            
+        } 
+    }
+    return info_length;
 }
 
 int send_frame_su(int fd, char ADDR, char CMD)
@@ -74,6 +140,7 @@ int send_frame_su(int fd, char ADDR, char CMD)
     return res;
 }
 
+// TODO : delete this. 
 inline int send_frame_i(int fd, char* frame, int frame_length){
     return write(fd, frame, frame_length); 
 }
@@ -88,7 +155,8 @@ int read_frame_su(int fd, char CMD)
         switch (curr_state)
         {
         // RECEIVE FLAG
-        case 0:
+        case 0: 
+
             printf("case 0: %02x\n", byte);
             if (byte == FLAG)
                 curr_state++;
@@ -97,7 +165,7 @@ int read_frame_su(int fd, char CMD)
         // RECEIVE ADDR
         case 1:
             printf("case 1: %02x\n", byte);
-            if (byte == ADDR_CMD_EMI)
+            if (byte == A)
                 curr_state++;
             else if (byte != FLAG)
                 curr_state = 0;
@@ -116,7 +184,7 @@ int read_frame_su(int fd, char CMD)
         // RECEIVE BCC
         case 3:
             printf("case 3: %02x\n", byte);
-            if (byte == (CMD ^ ADDR_CMD_EMI))
+            if (byte == (CMD ^ A))
                 curr_state++;
             else if (byte == FLAG)
                 curr_state = 1;
@@ -156,7 +224,7 @@ int read_timeout_frame_su(int fd, char CMD)
         // RECEIVE ADDR
         case 1:
             printf("case 1: %02x\n", byte);
-            if (byte == ADDR_CMD_EMI)
+            if (byte == A)
                 curr_state++;
             else if (byte != FLAG)
                 curr_state = 0;
@@ -175,7 +243,7 @@ int read_timeout_frame_su(int fd, char CMD)
         // RECEIVE BCC
         case 3:
             printf("case 3: %02x\n", byte);
-            if (byte == (CMD ^ ADDR_CMD_EMI))
+            if (byte == (CMD ^ A))
                 curr_state++;
             else if (byte == FLAG)
                 curr_state = 1;
@@ -260,10 +328,8 @@ int create_frame_i(char *data, char *frame, int data_length, char CMD)
 
     // Store information 
     frame_length = 5  + bcc_length + data_length;  
-    frame = (char*) malloc(sizeof(char)* frame_length); 
-
     frame[0] = FLAG;
-    frame[1] = ADDR_CMD_EMI;
+    frame[1] = A;
     frame[2] = CMD; 
     frame[3] = frame[1]^frame[2];  
     // BCC 
@@ -272,6 +338,8 @@ int create_frame_i(char *data, char *frame, int data_length, char CMD)
 
     frame[frame_length-1] = FLAG;   
 
+
+    printf("Created frame i\n"); 
     return frame_length; 
 }
 

@@ -13,10 +13,15 @@ int main(int argc, char **argv) {
     }        
 
     // SET CHANNEL
-    //fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio);
-    char * frame; 
-    read(fd, frame, 255); 
-    printf("%s\n", frame); 
+    fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio); 
+    char *buffer = (char *) malloc(MAX_SIZE_ARRAY*sizeof(char)); 
+    int length = llread(fd, buffer, CMD_S0);  
+
+
+    printf("\n TRAMA INFO: \n"); 
+    for (int i = 0 ; i< length; i++)
+        printf("%02x\n", buffer[i]); 
+
 
     tcsetattr(fd, TCSANOW, &oldtio);
     sleep(1);
