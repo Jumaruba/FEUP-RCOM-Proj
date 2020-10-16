@@ -54,19 +54,12 @@ int llwrite(int fd, byte *data, int *data_length)
         printf("Length must be positive");
         return -1;
     }
-    
-    //TODO : situation 1, no answer 
-    //TODO : situation 2, send again the message 
 
     int frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
 
     while(res != 0){
         // Creating the info to send
         alarm(3); 
-        // TODO: delete this later 
-        for (int i = 0 ; i <  frame_length; i++)
-            printf("%02x\n", frame[i]); 
-        //----- 
 
         write(fd, frame, frame_length); 
         
@@ -96,9 +89,9 @@ int llread(int fd, byte * buffer){
     
         //CHECK BCC2
         byte check_BCC2 = 0x00; 
-        create_BCC2(buffer, &check_BCC2, data_length-1); 
-        // TODO: descomment
-        /*if (check_BCC2 != buffer[data_length-1]) {
+        create_BCC2(buffer, &check_BCC2, data_length-1);  
+
+        if (check_BCC2 != buffer[data_length-1]) {
             send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
             rejects ++; 
         }
@@ -107,7 +100,7 @@ int llread(int fd, byte * buffer){
             r_reader = SWITCH(r_reader); 
             s_reader = SWITCH(s_reader); 
             return data_length;
-        }*/
+        }
     }
     return -1;
 }
@@ -231,12 +224,12 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
                     curr_state ++; 
                 else if (byte == FLAG) 
                     curr_state = 1; 
-                else if (CMD == CMD_S0){
-                    send_frame_nnsp(fd, A, CMD_REJ1); 
+                else if (CMD == CMD_S(0)){
+                    send_frame_nnsp(fd, A, CMD_REJ(1)); 
                     curr_state = 0; 
                 }
-                else if (CMD == CMD_S1){
-                    send_frame_nnsp(fd, A, CMD_REJ0);  
+                else if (CMD == CMD_S(1)){
+                    send_frame_nnsp(fd, A, CMD_REJ(0));  
                     curr_state = 0; 
                 } 
                 break;
@@ -323,7 +316,7 @@ int read_frame_timeout_sp(int fd, byte CMD)
     {
         if (read(fd, &byte, 1) == -1)
             return -1;
-            
+
         switch (curr_state)
         {
         // RECEIVE FLAG
