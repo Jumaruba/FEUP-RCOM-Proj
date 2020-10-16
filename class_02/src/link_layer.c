@@ -5,39 +5,40 @@ int numTransmissions = 0;
 
 int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 {
-    int fd;
+    int fd = -1;
     int res = -1;
 
-    if (TRANSMITTER == flag)
-    {
+    if (TRANSMITTER == flag) { 
+
         fd = openDescriptor(port, oldtio, newtio);
 
+        // Install the alarm. 
         signal(SIGALRM, handle_alarm_timeout);
         siginterrupt(SIGALRM, 1);
 
-        // SET
-        while (res != 0)
-        {
+        // Establishment of the connection. 
+        while (res != 0) {
             alarm(3);
-            send_frame_nnsp(fd, A, CMD_SET);
+            send_frame_nnsp(fd, A, CMD_SET); 
             printSuccess("Written CMD_SET.");
-            res = read_frame_timeout_sp(fd, CMD_UA);
+            
+            if((res = read_frame_timeout_sp(fd, CMD_UA)) == 0)
+                printSuccess("Received UA.");
         }
 
-        if (res == 0)
-            alarm_off();
+        if (res == 0) alarm_off();
     }
 
     else if (RECEPTOR == flag)
     {
         fd = openDescriptor(port, oldtio, newtio);
 
-        // SEND FRAME
+        // Establishment of the connection. 
         read_frame_nn(fd, CMD_SET);
-        printf("Received CMD_SET with success\n");
+        printSuccess("Received CMD_SET with success.");
 
         if (send_frame_nnsp(fd, A, CMD_UA) <= 0)
-            printf("Error sending answer to the emissor\n");
+            printError("Error sending answer to the emissor.");
     }
     return fd;
 }
@@ -77,21 +78,21 @@ int llwrite(int fd, byte *data, int *data_length)
     
 }
 
-int llread(int fd, byte * buffer){   
-    int rejects = 0; 
+int llread(int fd, byte * data){   
+    int rejects = 0;                    
     int data_length = -1;
     int s_reader = 0, r_reader = 1; 
 
     while(rejects < MAX_REJECTS){  
-        data_length = read_frame_i(fd, buffer, CMD_S(s_reader));
+        data_length = read_frame_i(fd, data, CMD_S(s_reader));
         
-        byte_destuffing(buffer, &data_length);   
+        byte_destuffing(data, &data_length);   
     
         //CHECK BCC2
         byte check_BCC2 = 0x00; 
-        create_BCC2(buffer, &check_BCC2, data_length-1);  
+        create_BCC2(data, &check_BCC2, data_length-1);  
 
-        if (check_BCC2 != buffer[data_length-1]) {
+        if (check_BCC2 != data[data_length-1]) {
             send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
             rejects ++; 
         }
@@ -121,47 +122,48 @@ int send_frame_nnsp(int fd, byte ADDR, byte CMD)
 int read_frame_nn(int fd, byte CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/
-    byte byte;
-    while (curr_state < 5)
-    {
-        if (read(fd, &byte, 1) == -1) 
+    byte data;
+
+    while (TRUE) { 
+
+        if (read(fd, &data, 1) == -1) 
             return -1; 
 
-        switch (curr_state)
-        {
+        switch (curr_state) { 
+
         // RECEIVE FLAG
         case 0: 
 
-            printf("case 0: %02x\n", byte);
-            if (byte == FLAG)
+            printf("case 0: %02x\n", data);
+            if (data == FLAG)
                 curr_state++;
             break;
 
         // RECEIVE ADDR
         case 1:
-            printf("case 1: %02x\n", byte);
-            if (byte == A)
+            printf("case 1: %02x\n", data);
+            if (data == A)
                 curr_state++;
-            else if (byte != FLAG)
+            else if (data != FLAG)
                 curr_state = 0;
             break;
 
         // RECEIVE CMD
         case 2:
-            printf("case 2: %02x\n", byte);
-            if (byte == CMD)
+            printf("case 2: %02x\n", data);
+            if (data == CMD)
                 curr_state++;
-            else if (byte == FLAG)
+            else if (data == FLAG)
                 curr_state = 1;
             else
                 curr_state = 0;
             break;
         // RECEIVE BCC
         case 3:
-            printf("case 3: %02x\n", byte);
-            if (byte == (CMD ^ A))
+            printf("case 3: %02x\n", data);
+            if (data == (CMD ^ A))
                 curr_state++;
-            else if (byte == FLAG)
+            else if (data == FLAG)
                 curr_state = 1;
             else
                 curr_state = 0;
@@ -169,13 +171,9 @@ int read_frame_nn(int fd, byte CMD)
 
         // RECEIVE FLAG
         case 4:
-            printf("case 4: %02x\n", byte);
-            if (byte == FLAG){
-                curr_state++; 
-                return 0; 
-            }
-            else
-                curr_state = 0;
+            printf("case 4: %02x\n", data);
+            if (data == FLAG) return 0; 
+            else curr_state = 0;
         }
     }
     return -1;
@@ -251,6 +249,7 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
 int read_frame_timeout_nn(int fd, byte *CMD){
    int curr_state = 0; /* byte that is being read. From 0 to 4.*/
     byte byte;
+
     while (curr_state < 5)
     {
         if (read(fd, &byte, 1) == -1) 
@@ -314,47 +313,47 @@ int read_frame_timeout_nn(int fd, byte *CMD){
 
 int read_frame_timeout_sp(int fd, byte CMD)
 {
-    int curr_state = 0; /* byte that is being read. From 0 to 4.*/
-    byte byte;
-    while (curr_state < 5)
-    {
-        if (read(fd, &byte, 1) == -1)
+    int curr_state = 0;     /* byte that is being read. From 0 to 4.*/
+    byte data;
+
+    while (TRUE) {
+
+        if (read(fd, &data, 1) == -1)
             return -1;
 
-        switch (curr_state)
-        {
+        switch (curr_state) {
         // RECEIVE FLAG
         case 0:
-            printf("case 0: %02x\n", byte);
-            if (byte == FLAG)
+            printf("case 0: %02x\n", data);
+            if (data == FLAG)
                 curr_state++;
             break;
 
         // RECEIVE ADDR
         case 1:
-            printf("case 1: %02x\n", byte);
-            if (byte == A)
+            printf("case 1: %02x\n", data);
+            if (data == A)
                 curr_state++;
-            else if (byte != FLAG)
+            else if (data != FLAG)
                 curr_state = 0;
             break;
 
         // RECEIVE CMD
         case 2:
-            printf("case 2: %02x\n", byte);
-            if (byte == CMD)
+            printf("case 2: %02x\n", data);
+            if (data == CMD)
                 curr_state++;
-            else if (byte == FLAG)
+            else if (data == FLAG)
                 curr_state = 1;
             else
                 curr_state = 0;
             break;
         // RECEIVE BCC
         case 3:
-            printf("case 3: %02x\n", byte);
-            if (byte == (CMD ^ A))
+            printf("case 3: %02x\n", data);
+            if (data == (CMD ^ A))
                 curr_state++;
-            else if (byte == FLAG)
+            else if (data == FLAG)
                 curr_state = 1;
             else
                 curr_state = 0;
@@ -362,15 +361,9 @@ int read_frame_timeout_sp(int fd, byte CMD)
 
         // RECEIVE FLAG
         case 4:
-            printf("case 4: %02x\n", byte);
-            if (byte == FLAG)
-            {
-                curr_state++;
-                printf("Success reading %x\n", CMD);
-                return 0; 
-             }
-            else
-                curr_state = 0;
+            printf("case 4: %02x\n", data);
+            if (data == FLAG) return 0; 
+            else curr_state = 0;
         }
     }
 
@@ -522,14 +515,20 @@ int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
 handle_alarm_timeout()
 {
     numTransmissions++;
-
-    printf("Time out #%d\n", numTransmissions);
+    
+    // Colorful messages.
+    char * message = (char*)malloc(MAX_SIZE_ARRAY);
+    sprintf(message, "Time out #%d", numTransmissions); 
+    printError(message); 
 
     if (numTransmissions > TRIES)
     {
-        printf("Number of tries exceeded\n");
+        printError("Number of tries exceeded\n"); 
+        free(message); 
         exit(-1);
     }
+
+    free(message);
 }
 
 void alarm_off()

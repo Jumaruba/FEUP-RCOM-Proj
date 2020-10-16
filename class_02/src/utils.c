@@ -7,9 +7,9 @@ void print_hex(char *s) {
 }
 
 void printSuccess(char* text){
-    printf ("\033[32;1m SUCCESS: %s \033[0m\n", text);
+    printf ("\033[32;1mSUCCESS: %s \033[0m\n", text);
 }
 
 void printError(char* text){
-    printf ("\033[31;1m FAILURE: %s \033[0m\n", text);
+    printf ("\033[31;1mFAILURE: %s \033[0m\n", text);
 }

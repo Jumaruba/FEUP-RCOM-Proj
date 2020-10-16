@@ -28,12 +28,20 @@ typedef enum STATES{
 typedef unsigned char byte; 
 
 /* API -----------------------------------------------------------------------*/ 
-
+/**
+ * @brief Set the port configuration and establish the connecction. 
+ * 
+ * @param port String containing the path of the string.
+ * @param flag The plot of the caller, i.e TRANSMITTER, RECEPTOR
+ * @param oldtio 
+ * @param newtio 
+ * @return int -1 in case of error, number of the file descriptor otherwise. 
+ */
 int llopen(byte * port, int flag, struct termios *oldtio, struct termios *newtio); 
 
 int llwrite(int fd, byte* data, int *data_length); 
 
-int llread(int fd, byte * buffer); 
+int llread(int fd, byte * data); 
 
 int llclose(); 
 
