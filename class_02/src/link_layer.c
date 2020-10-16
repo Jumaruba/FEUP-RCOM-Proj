@@ -78,26 +78,28 @@ int llwrite(int fd, char *data, int *data_length)
 
 int llread(int fd, char * buffer){   
     int s = 0, r = 1; 
-
+    int rejects = 0; 
     int data_length = -1;
-    while(TRUE){        // TODO: what is the condition 
+    while(rejects < MAX_REJECTS){  
         data_length = read_frame_i(fd, buffer, CMD_S(s));
-    
+        
         byte_destuffing(buffer, &data_length);   
     
         //CHECK BCC2
         char check_BCC2 = 0x00; 
         create_BCC2(buffer, &check_BCC2, data_length-1); 
-        if (check_BCC2 != buffer[data_length-1])     
-            send_frame_su(fd, A, CMD_REJ(r)); 
+        if (check_BCC2 != buffer[data_length-1]) {
+            send_frame_su(fd, A, CMD_REJ(r));  
+            rejects ++; 
+        }
         else{
             send_frame_su(fd, A, CMD_RR(r));  
             r = SWITCH(r); 
             s = SWITCH(s); 
-            return data_length; //TODO : delete this.
+            return data_length;
         }
     }
-    return data_length;
+    return -1;
 }
 
 int send_frame_su(int fd, char ADDR, char CMD)
@@ -113,11 +115,10 @@ int send_frame_su(int fd, char ADDR, char CMD)
     return res;
 }
 
-// TODO : delete this. 
-inline int send_frame_i(int fd, char* frame, int frame_length){
-    return write(fd, frame, frame_length); 
+int read_frame_header(int fd){
+    
 }
- 
+
 int read_frame_su(int fd, char CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/

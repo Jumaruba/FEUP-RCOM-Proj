@@ -41,8 +41,6 @@ int send_frame_su(int fd, char ADDR, char CMD);
 
 int read_frame_i(int fd, char *buffer, char CMD_expected); 
 
-inline int send_frame_i(int fd, char * frame, int frame_length); 
-
 int read_frame_su(int fd, char CMD);  
 
 int read_timeout_frame_su(int fd, char CMD);   

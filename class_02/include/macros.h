@@ -16,6 +16,7 @@
 
 /* MACROS FOR THE ALARM ----------------------------------------------------------- */  
 
+#define MAX_REJECTS     3
 #define TRIES           3               /* Tries to read the receptor answers*/ 
 #define TIMEOUT         3               /* Time to wait for the receptor answers*/
 
