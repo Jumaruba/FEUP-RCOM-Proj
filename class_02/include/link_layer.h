@@ -37,15 +37,19 @@ int llclose();
 
 /* AUX API -------------------------------------------------------------------*/ 
 
-int send_frame_su(int fd, char ADDR, char CMD); 
+/* Read and send frames */ 
 
-int read_frame_i(int fd, char *buffer, char CMD_expected); 
+int send_frame_nnsp(int fd, char ADDR, char CMD); 
 
-int read_frame_su(int fd, char CMD);  
+int read_frame_i(int fd, char *buffer, char CMD); 
+
+int read_frame_nn(int fd, char CMD);  
+
+int read_frame_timeout_sp(int fd, char *CMD); 
 
 int read_timeout_frame_su(int fd, char CMD);   
 
-int read_timeout_frame_i(int fd, char CMD); 
+/* Create information frame */ 
 
 int create_frame_i(char * data, char * frame, int data_length, char CMD); 
 
@@ -55,7 +59,6 @@ int byte_destuffing(char * frame, int * frame_length);
 
 void create_BCC2(char * data, char *buffer, int data_length); 
 
-int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
 
 /* ALARM -----------------------------------------------------------------------*/ 
 
@@ -65,6 +68,7 @@ void alarm_off();
 
 /* OTHERS ---------------------------------------------------------------------*/ 
 
+int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
 
 
 #endif

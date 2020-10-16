@@ -2,21 +2,6 @@
 
 int numTransmissions = 0;
 
-inline void update_r(int *r){
-    *r = *r == 1? 0: 1;
-} 
-
-inline char get_ns(int s){
-    return s == 1? CMD_S1: CMD_S0; 
-}
-
-inline char get_rr(int r){ 
-    return r == 1? CMD_RR1: CMD_RR0; 
-}
-
-inline char get_rej(int r){
-    return r == 1? CMD_REJ1: CMD_REJ0; 
-} 
 
 int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
 {
@@ -34,7 +19,7 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
         while (curr_state < 5)
         {
             alarm(3);
-            int res = send_frame_su(fd, A, CMD_SET);
+            int res = send_frame_nnsp(fd, A, CMD_SET);
             printSuccess("Written CMD_SET.");
             curr_state = read_timeout_frame_su(fd, CMD_UA);
         }
@@ -48,10 +33,10 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
         fd = openDescriptor(port, oldtio, newtio);
 
         // SEND FRAME
-        read_frame_su(fd, CMD_SET);
+        read_frame_nn(fd, CMD_SET);
         printf("Received CMD_SET with success\n");
 
-        if (send_frame_su(fd, A, CMD_UA) <= 0)
+        if (send_frame_nnsp(fd, A, CMD_UA) <= 0)
             printf("Error sending answer to the emissor\n");
     }
     return fd;
@@ -59,20 +44,34 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
 
 int llwrite(int fd, char *data, int *data_length)
 {
+    static int s_writer = 0, r_writer = 1; 
+
     char * frame  = (char*) malloc(MAX_SIZE_ARRAY*sizeof(char));
     int curr_state = 0 ; 
-
+    
     if (*data_length < 0) {
         printf("Length must be positive");
         return -1;
     }
+    
+    int frame_length = create_frame_i(data, frame, *data_length, CMD_S0);    
+    while(curr_state < 5){
+        // Creating the info to send
+        alarm(3); 
+        for (int i = 0 ; i <  frame_length; i++)
+            printf("%02x\n", frame[i]); 
+        write(fd, frame, frame_length); 
+        
+        char CMD; 
+        read_frame_timeout_sp(fd, &CMD); 
 
-    // Creating the info to send
-    int frame_length = create_frame_i(data, frame, *data_length, CMD_S0);   
-
-    for (int i = 0 ; i <  frame_length; i++)
-        printf("%02x\n", frame[i]); 
-    write(fd, frame, frame_length); 
+        if (CMD == CMD_RR(r_writer)){ 
+            alarm_off(); 
+            return 0; 
+        }
+        
+    } 
+    return -1;
     
 }
 
@@ -80,6 +79,7 @@ int llread(int fd, char * buffer){
     int s = 0, r = 1; 
     int rejects = 0; 
     int data_length = -1;
+
     while(rejects < MAX_REJECTS){  
         data_length = read_frame_i(fd, buffer, CMD_S(s));
         
@@ -89,11 +89,11 @@ int llread(int fd, char * buffer){
         char check_BCC2 = 0x00; 
         create_BCC2(buffer, &check_BCC2, data_length-1); 
         if (check_BCC2 != buffer[data_length-1]) {
-            send_frame_su(fd, A, CMD_REJ(r));  
+            send_frame_nnsp(fd, A, CMD_REJ(r));  
             rejects ++; 
         }
         else{
-            send_frame_su(fd, A, CMD_RR(r));  
+            send_frame_nnsp(fd, A, CMD_RR0);  // TODO: fix this value
             r = SWITCH(r); 
             s = SWITCH(s); 
             return data_length;
@@ -102,7 +102,7 @@ int llread(int fd, char * buffer){
     return -1;
 }
 
-int send_frame_su(int fd, char ADDR, char CMD)
+int send_frame_nnsp(int fd, char ADDR, char CMD)
 {
     char frame[5];
     frame[0] = FLAG;
@@ -115,11 +115,7 @@ int send_frame_su(int fd, char ADDR, char CMD)
     return res;
 }
 
-int read_frame_header(int fd){
-    
-}
-
-int read_frame_su(int fd, char CMD)
+int read_frame_nn(int fd, char CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/
     char byte;
@@ -178,7 +174,7 @@ int read_frame_su(int fd, char CMD)
     return 0;
 }
 
-int read_frame_i(int fd, char *buffer, char CMD_expected){
+int read_frame_i(int fd, char *buffer, char CMD){
     int curr_state= 0, info_length = -1; 
 
     char byte; 
@@ -208,7 +204,7 @@ int read_frame_i(int fd, char *buffer, char CMD_expected){
             // RECEIVE CMD
             case 2: 
                 printf("case 2: %02x\n", byte);  
-                if (byte == CMD_expected)
+                if (byte == CMD)
                     curr_state++;
                 else if (byte == FLAG) 
                     curr_state = 1; 
@@ -219,16 +215,16 @@ int read_frame_i(int fd, char *buffer, char CMD_expected){
             // RECEIVE BCC1
             case 3: 
                 printf("case 3: %02x\n", byte);    
-                if (byte == (CMD_expected ^ A))
+                if (byte == (CMD ^ A))
                     curr_state ++; 
                 else if (byte == FLAG) 
                     curr_state = 1; 
-                else if (CMD_expected == CMD_S0){
-                    send_frame_su(fd, A, CMD_REJ1); 
+                else if (CMD == CMD_S0){
+                    send_frame_nnsp(fd, A, CMD_REJ1); 
                     curr_state = 0; 
                 }
-                else if (CMD_expected == CMD_S1){
-                    send_frame_su(fd, A, CMD_REJ0);  
+                else if (CMD == CMD_S1){
+                    send_frame_nnsp(fd, A, CMD_REJ0);  
                     curr_state = 0; 
                 } 
                 break;
@@ -243,6 +239,66 @@ int read_frame_i(int fd, char *buffer, char CMD_expected){
         } 
     }
     return info_length;
+}
+
+int read_frame_timeout_sp(int fd, char *CMD){
+   int curr_state = 0; /* byte that is being read. From 0 to 4.*/
+    char byte;
+    while (curr_state < 5)
+    {
+        read(fd, &byte, 1);
+        switch (curr_state)
+        {
+        // RECEIVE FLAG
+        case 0: 
+
+            printf("case 0: %02x\n", byte);
+            if (byte == FLAG)
+                curr_state++;
+            break;
+
+        // RECEIVE ADDR
+        case 1:
+            printf("case 1: %02x\n", byte);
+            if (byte == A)
+                curr_state++;
+            else if (byte != FLAG)
+                curr_state = 0;
+            break;
+
+        // RECEIVE CMD
+        case 2:
+            printf("case 2: %02x\n", byte);
+            if (byte == CMD_REJ0 || byte == CMD_REJ1 || byte == CMD_RR0 || byte == CMD_RR1){ 
+                *CMD = byte; 
+                curr_state++;
+            } 
+            else if (byte == FLAG)
+                curr_state = 1;
+            else
+                curr_state = 0;
+            break;
+        // RECEIVE BCC
+        case 3:
+            printf("case 3: %02x\n", byte);
+            if (byte == (*CMD ^ A))
+                curr_state++;
+            else if (byte == FLAG)
+                curr_state = 1;
+            else
+                curr_state = 0;
+            break;
+
+        // RECEIVE FLAG
+        case 4:
+            printf("case 4: %02x\n", byte);
+            if (byte == FLAG)
+                curr_state++;
+            else
+                curr_state = 0;
+        }
+    }
+    return 0;
 }
 
 int read_timeout_frame_su(int fd, char CMD)
@@ -307,50 +363,6 @@ int read_timeout_frame_su(int fd, char CMD)
     }
 
     return curr_state;
-}
-
-int read_timeout_frame_i(int fd, char CMD){
-
-}
-
-int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
-{
-    int fd = open(port, O_RDWR | O_NOCTTY);
-    if (fd < 0)
-    {
-        printf("%s\n", port);
-        perror(port);
-        exit(-1);
-    }
-
-    if (tcgetattr(fd, oldtio) == -1)
-    { /* save current port settings */
-        perror("tcgetattr");
-        exit(-1);
-    }
-
-    bzero(newtio, sizeof(newtio));
-    newtio->c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
-    newtio->c_iflag = IGNPAR;
-    newtio->c_oflag = 0;
-
-    /* set input mode (non-canonical, no echo,...) */
-    newtio->c_lflag = 0;
-
-    newtio->c_cc[VTIME] = 0; /* inter-character timer unused */
-    newtio->c_cc[VMIN] = 1;  /* blocking read until 5 chars received */
-
-    tcflush(fd, TCIOFLUSH);
-
-    if (tcsetattr(fd, TCSANOW, newtio) == -1)
-    {
-        perror("tcsetattr");
-        exit(-1);
-    }
-
-    printf("New termios structure set\n");
-
-    return fd;
 }
 
 int create_frame_i(char *data, char *frame, int data_length, char CMD)
@@ -455,6 +467,46 @@ int byte_destuffing(char * frame, int * frame_length){
     free(new_frame); 
 }
 
+int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
+{
+    int fd = open(port, O_RDWR | O_NOCTTY);
+    if (fd < 0)
+    {
+        printf("%s\n", port);
+        perror(port);
+        exit(-1);
+    }
+
+    if (tcgetattr(fd, oldtio) == -1)
+    { /* save current port settings */
+        perror("tcgetattr");
+        exit(-1);
+    }
+
+    bzero(newtio, sizeof(newtio));
+    newtio->c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
+    newtio->c_iflag = IGNPAR;
+    newtio->c_oflag = 0;
+
+    /* set input mode (non-canonical, no echo,...) */
+    newtio->c_lflag = 0;
+
+    newtio->c_cc[VTIME] = 0; /* inter-character timer unused */
+    newtio->c_cc[VMIN] = 1;  /* blocking read until 5 chars received */
+
+    tcflush(fd, TCIOFLUSH);
+
+    if (tcsetattr(fd, TCSANOW, newtio) == -1)
+    {
+        perror("tcsetattr");
+        exit(-1);
+    }
+
+    printf("New termios structure set\n");
+
+    return fd;
+}
+
 handle_alarm_timeout()
 {
     numTransmissions++;
@@ -473,8 +525,3 @@ void alarm_off()
     numTransmissions = 0;
     alarm(0);
 }
-
-static inline void update_s(int *s){
-    *s = *s == 1? 0: 1;  
-}
-
