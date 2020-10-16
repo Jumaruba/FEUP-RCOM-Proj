@@ -19,8 +19,8 @@ int main(int argc, char **argv)
     // SET CHANNEL 
     fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio); 
 
-    char * data = (char*)malloc(sizeof(char)*3); 
-    data[0] = 0x01; 
+    byte * data = (byte*)malloc(sizeof(byte)*3); 
+    data[0] = 0xA0; 
     data[1] = ESC; 
     data[2] = ESC; 
     int length = 3; 

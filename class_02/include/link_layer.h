@@ -25,13 +25,15 @@ typedef enum STATES{
 } ;
 
 
+typedef unsigned char byte; 
+
 /* API -----------------------------------------------------------------------*/ 
 
-int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio); 
+int llopen(byte * port, int flag, struct termios *oldtio, struct termios *newtio); 
 
-int llwrite(int fd, char * data, int *data_length); 
+int llwrite(int fd, byte* data, int *data_length); 
 
-int llread(int fd, char * buffer); 
+int llread(int fd, byte * buffer); 
 
 int llclose(); 
 
@@ -39,25 +41,25 @@ int llclose();
 
 /* Read and send frames */ 
 
-int send_frame_nnsp(int fd, char ADDR, char CMD); 
+int send_frame_nnsp(int fd, byte ADDR, byte CMD); 
 
-int read_frame_i(int fd, char *buffer, char CMD); 
+int read_frame_i(int fd, byte *buffer, byte CMD); 
 
-int read_frame_nn(int fd, char CMD);  
+int read_frame_nn(int fd, byte CMD);  
 
-int read_frame_timeout_sp(int fd, char *CMD); 
+int read_frame_timeout_nn(int fd, byte *CMD); 
 
-int read_timeout_frame_su(int fd, char CMD);   
+int read_frame_timeout_sp(int fd, byte CMD);   
 
 /* Create information frame */ 
 
-int create_frame_i(char * data, char * frame, int data_length, char CMD); 
+int create_frame_i(byte * data, byte * frame, int data_length, byte CMD); 
 
-int byte_stuffing(char * frame, int *frame_length); 
+int byte_stuffing(byte * frame, int *frame_length); 
 
-int byte_destuffing(char * frame, int * frame_length);
+int byte_destuffing(byte * frame, int * frame_length);
 
-void create_BCC2(char * data, char *buffer, int data_length); 
+void create_BCC2(byte * data, byte *buffer, int data_length); 
 
 
 /* ALARM -----------------------------------------------------------------------*/ 
@@ -68,7 +70,7 @@ void alarm_off();
 
 /* OTHERS ---------------------------------------------------------------------*/ 
 
-int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
+int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio);
 
 
 #endif

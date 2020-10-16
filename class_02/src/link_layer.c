@@ -3,7 +3,7 @@
 int numTransmissions = 0;
 
 
-int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
+int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 {
     int fd;
     int curr_state = 0;
@@ -21,7 +21,7 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
             alarm(3);
             int res = send_frame_nnsp(fd, A, CMD_SET);
             printSuccess("Written CMD_SET.");
-            curr_state = read_timeout_frame_su(fd, CMD_UA);
+            curr_state = read_frame_timeout_sp(fd, CMD_UA);
         }
 
         if (curr_state == 5)
@@ -42,11 +42,11 @@ int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
     return fd;
 }
 
-int llwrite(int fd, char *data, int *data_length)
+int llwrite(int fd, byte *data, int *data_length)
 {
-    static int s_writer = 0, r_writer = 1; 
+    int s_writer = 0, r_writer = 1; 
 
-    char * frame  = (char*) malloc(MAX_SIZE_ARRAY*sizeof(char));
+    byte * frame  = (byte*) malloc(MAX_SIZE_ARRAY*sizeof(byte));
     int curr_state = 0 ; 
     
     if (*data_length < 0) {
@@ -62,20 +62,18 @@ int llwrite(int fd, char *data, int *data_length)
             printf("%02x\n", frame[i]); 
         write(fd, frame, frame_length); 
         
-        char CMD; 
-        read_frame_timeout_sp(fd, &CMD); 
-
+        byte CMD; 
+        read_frame_timeout_nn(fd, &CMD); 
         if (CMD == CMD_RR(r_writer)){ 
-            alarm_off(); 
+            alarm(0); 
             return 0; 
         }
         
     } 
-    return -1;
     
 }
 
-int llread(int fd, char * buffer){   
+int llread(int fd, byte * buffer){   
     int s = 0, r = 1; 
     int rejects = 0; 
     int data_length = -1;
@@ -86,14 +84,14 @@ int llread(int fd, char * buffer){
         byte_destuffing(buffer, &data_length);   
     
         //CHECK BCC2
-        char check_BCC2 = 0x00; 
+        byte check_BCC2 = 0x00; 
         create_BCC2(buffer, &check_BCC2, data_length-1); 
         if (check_BCC2 != buffer[data_length-1]) {
             send_frame_nnsp(fd, A, CMD_REJ(r));  
             rejects ++; 
         }
-        else{
-            send_frame_nnsp(fd, A, CMD_RR0);  // TODO: fix this value
+        else{ 
+            send_frame_nnsp(fd, A, 0x85);  
             r = SWITCH(r); 
             s = SWITCH(s); 
             return data_length;
@@ -102,9 +100,9 @@ int llread(int fd, char * buffer){
     return -1;
 }
 
-int send_frame_nnsp(int fd, char ADDR, char CMD)
+int send_frame_nnsp(int fd, byte ADDR, byte CMD)
 {
-    char frame[5];
+    byte frame[5];
     frame[0] = FLAG;
     frame[1] = ADDR;
     frame[2] = CMD;
@@ -115,10 +113,10 @@ int send_frame_nnsp(int fd, char ADDR, char CMD)
     return res;
 }
 
-int read_frame_nn(int fd, char CMD)
+int read_frame_nn(int fd, byte CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/
-    char byte;
+    byte byte;
     while (curr_state < 5)
     {
         read(fd, &byte, 1);
@@ -174,13 +172,13 @@ int read_frame_nn(int fd, char CMD)
     return 0;
 }
 
-int read_frame_i(int fd, char *buffer, char CMD){
+int read_frame_i(int fd, byte *buffer, byte CMD){
     int curr_state= 0, info_length = -1; 
 
-    char byte; 
+    byte byte; 
 
     while(curr_state < 5){
-        read(fd, &byte, BYTE); 
+        read(fd, &byte, 1); 
 
         switch (curr_state)
         { 
@@ -241,9 +239,9 @@ int read_frame_i(int fd, char *buffer, char CMD){
     return info_length;
 }
 
-int read_frame_timeout_sp(int fd, char *CMD){
+int read_frame_timeout_nn(int fd, byte *CMD){
    int curr_state = 0; /* byte that is being read. From 0 to 4.*/
-    char byte;
+    byte byte;
     while (curr_state < 5)
     {
         read(fd, &byte, 1);
@@ -272,6 +270,7 @@ int read_frame_timeout_sp(int fd, char *CMD){
             if (byte == CMD_REJ0 || byte == CMD_REJ1 || byte == CMD_RR0 || byte == CMD_RR1){ 
                 *CMD = byte; 
                 curr_state++;
+                printf("CMD: %02x\n", *CMD);
             } 
             else if (byte == FLAG)
                 curr_state = 1;
@@ -298,13 +297,13 @@ int read_frame_timeout_sp(int fd, char *CMD){
                 curr_state = 0;
         }
     }
-    return 0;
+    return curr_state;
 }
 
-int read_timeout_frame_su(int fd, char CMD)
+int read_frame_timeout_sp(int fd, byte CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/
-    char byte;
+    byte byte;
     while (curr_state < 5)
     {
         if (read(fd, &byte, 1) == -1)
@@ -365,12 +364,12 @@ int read_timeout_frame_su(int fd, char CMD)
     return curr_state;
 }
 
-int create_frame_i(char *data, char *frame, int data_length, char CMD)
+int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
 { 
     int frame_length = 0;  
 
     // Stuffing bcc and data.  
-    char *BCC2 = (char*)malloc(sizeof(char)); 
+    byte *BCC2 = (byte*)malloc(sizeof(byte)); 
     BCC2[0] = 0x00; 
     int bcc_length = 1;  
 
@@ -394,16 +393,16 @@ int create_frame_i(char *data, char *frame, int data_length, char CMD)
     return frame_length; 
 }
 
-void create_BCC2(char * data, char* buffer, int data_length)
+void create_BCC2(byte * data, byte* buffer, int data_length)
 {
     for (int i = 0 ; i < data_length; i++){
         *buffer ^= data[i]; 
     } 
 }
 
-int byte_stuffing(char * frame, int* frame_length)
+int byte_stuffing(byte * frame, int* frame_length)
 { 
-    char * new_frame ;      
+    byte * new_frame ;      
     int extra_space = 0;        /* The extra space needed to be added. */
     int new_frame_length = 0;   /* The new length of the string frame. */ 
     int actual_pos = 0;         /* Position in the new_frame. */ 
@@ -415,7 +414,7 @@ int byte_stuffing(char * frame, int* frame_length)
 
 
     new_frame_length = extra_space + *frame_length;  
-    new_frame = (char *)malloc(sizeof(char) * new_frame_length);     
+    new_frame = (byte *)malloc(sizeof(byte) * new_frame_length);     
 
     for (int i = 0 ; i< *frame_length; i++){  
         actual_pos = i + counter; 
@@ -443,10 +442,10 @@ int byte_stuffing(char * frame, int* frame_length)
     return 0; 
 }
 
-int byte_destuffing(char * frame, int * frame_length){
+int byte_destuffing(byte * frame, int * frame_length){
     
     int new_frame_pos = 0;  
-    char * new_frame = (char*)malloc(sizeof(char)*(*frame_length));   
+    byte * new_frame = (byte*)malloc(sizeof(byte)*(*frame_length));   
 
     for (int i = 0 ; i < *frame_length; i++){
         if (frame[i] == ESC){
@@ -467,7 +466,7 @@ int byte_destuffing(char * frame, int * frame_length){
     free(new_frame); 
 }
 
-int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
+int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
 {
     int fd = open(port, O_RDWR | O_NOCTTY);
     if (fd < 0)
@@ -492,7 +491,7 @@ int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
     newtio->c_lflag = 0;
 
     newtio->c_cc[VTIME] = 0; /* inter-character timer unused */
-    newtio->c_cc[VMIN] = 1;  /* blocking read until 5 chars received */
+    newtio->c_cc[VMIN] = 1;  /* blocking read until 1 chars received */
 
     tcflush(fd, TCIOFLUSH);
 
