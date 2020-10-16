@@ -2,6 +2,22 @@
 
 int numTransmissions = 0;
 
+inline void update_r(int *r){
+    *r = *r == 1? 0: 1;
+} 
+
+inline char get_ns(int s){
+    return s == 1? CMD_S1: CMD_S0; 
+}
+
+inline char get_rr(int r){ 
+    return r == 1? CMD_RR1: CMD_RR0; 
+}
+
+inline char get_rej(int r){
+    return r == 1? CMD_REJ1: CMD_REJ0; 
+} 
+
 int llopen(char *port, int flag, struct termios *oldtio, struct termios *newtio)
 {
     int fd;
@@ -60,71 +76,28 @@ int llwrite(int fd, char *data, int *data_length)
     
 }
 
-int llread(int fd, char * buffer, char  CMD_expected){  
-    int curr_state= 0, info_length = -1; 
+int llread(int fd, char * buffer){   
+    int s = 0, r = 1; 
 
-    char byte; 
-
-    while(curr_state < 5){
-        read(fd, &byte, BYTE); 
-
-        switch (curr_state)
-        { 
-            // RECEIVE FLAG
-            case 0: 
-                info_length = 0; 
-                printf("case 0: %02x\n", byte);
-                if (FLAG == byte) 
-                    curr_state ++;  
-                break; 
-            // RECEIVE ADDR 
-            case 1: 
-                printf("case 1: %02x\n", byte); 
-                if (A == byte)
-                    curr_state ++; 
-                else if (FLAG != byte) 
-                    curr_state = 0;  
-                
-                break; 
-
-            // RECEIVE CMD
-            case 2: 
-                printf("case 2: %02x\n", byte);  
-                if (byte == CMD_expected)
-                    curr_state++;
-                else if (byte == FLAG) 
-                    curr_state = 1; 
-                else curr_state = 0;
-
-                break; 
-
-            // RECEIVE BCC1
-            case 3: 
-                printf("case 3: %02x\n", byte);    
-                if (byte == (CMD_expected ^ A))
-                    curr_state ++; 
-                else if (byte == FLAG) 
-                    curr_state = 1; 
-                else if (CMD_expected == CMD_S0){
-                    send_frame_su(fd, A, CMD_REJ1); 
-                    curr_state = 0; 
-                }
-                else if (CMD_expected == CMD_S1){
-                    send_frame_su(fd, A, CMD_REJ0);  
-                    curr_state = 0; 
-                } 
-                break;
-            // RECEIVE INFO 
-            case 4:
-                printf("case 4: %02x\n", byte);
-                if (byte != FLAG){
-                    buffer[info_length++] = byte;  
-                }
-                else curr_state ++; 
-            
-        } 
+    int data_length = -1;
+    while(TRUE){        // TODO: what is the condition 
+        data_length = read_frame_i(fd, buffer, CMD_S(s));
+    
+        byte_destuffing(buffer, &data_length);   
+    
+        //CHECK BCC2
+        char check_BCC2 = 0x00; 
+        create_BCC2(buffer, &check_BCC2, data_length-1); 
+        if (check_BCC2 != buffer[data_length-1])     
+            send_frame_su(fd, A, CMD_REJ(r)); 
+        else{
+            send_frame_su(fd, A, CMD_RR(r));  
+            r = SWITCH(r); 
+            s = SWITCH(s); 
+            return data_length; //TODO : delete this.
+        }
     }
-    return info_length;
+    return data_length;
 }
 
 int send_frame_su(int fd, char ADDR, char CMD)
@@ -204,6 +177,73 @@ int read_frame_su(int fd, char CMD)
     return 0;
 }
 
+int read_frame_i(int fd, char *buffer, char CMD_expected){
+    int curr_state= 0, info_length = -1; 
+
+    char byte; 
+
+    while(curr_state < 5){
+        read(fd, &byte, BYTE); 
+
+        switch (curr_state)
+        { 
+            // RECEIVE FLAG
+            case 0: 
+                info_length = 0; 
+                printf("case 0: %02x\n", byte);
+                if (FLAG == byte) 
+                    curr_state ++;  
+                break; 
+            // RECEIVE ADDR 
+            case 1: 
+                printf("case 1: %02x\n", byte); 
+                if (A == byte)
+                    curr_state ++; 
+                else if (FLAG != byte) 
+                    curr_state = 0;  
+                
+                break; 
+
+            // RECEIVE CMD
+            case 2: 
+                printf("case 2: %02x\n", byte);  
+                if (byte == CMD_expected)
+                    curr_state++;
+                else if (byte == FLAG) 
+                    curr_state = 1; 
+                else curr_state = 0;
+
+                break; 
+
+            // RECEIVE BCC1
+            case 3: 
+                printf("case 3: %02x\n", byte);    
+                if (byte == (CMD_expected ^ A))
+                    curr_state ++; 
+                else if (byte == FLAG) 
+                    curr_state = 1; 
+                else if (CMD_expected == CMD_S0){
+                    send_frame_su(fd, A, CMD_REJ1); 
+                    curr_state = 0; 
+                }
+                else if (CMD_expected == CMD_S1){
+                    send_frame_su(fd, A, CMD_REJ0);  
+                    curr_state = 0; 
+                } 
+                break;
+            // RECEIVE INFO 
+            case 4:
+                printf("case 4: %02x\n", byte);
+                if (byte != FLAG){
+                    buffer[info_length++] = byte;  
+                }
+                else curr_state ++; 
+            
+        } 
+    }
+    return info_length;
+}
+
 int read_timeout_frame_su(int fd, char CMD)
 {
     int curr_state = 0; /* byte that is being read. From 0 to 4.*/
@@ -272,7 +312,6 @@ int read_timeout_frame_i(int fd, char CMD){
 
 }
 
-
 int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio)
 {
     int fd = open(port, O_RDWR | O_NOCTTY);
@@ -337,7 +376,6 @@ int create_frame_i(char *data, char *frame, int data_length, char CMD)
     memcpy(&frame[4 + data_length], BCC2, bcc_length); 
 
     frame[frame_length-1] = FLAG;   
-
 
     printf("Created frame i\n"); 
     return frame_length; 
@@ -434,3 +472,8 @@ void alarm_off()
     numTransmissions = 0;
     alarm(0);
 }
+
+static inline void update_s(int *s){
+    *s = *s == 1? 0: 1;  
+}
+

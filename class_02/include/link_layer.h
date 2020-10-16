@@ -24,19 +24,22 @@ typedef enum STATES{
     BBC2_STATE, 
 } ;
 
+
 /* API -----------------------------------------------------------------------*/ 
 
 int llopen(char * port, int flag, struct termios *oldtio, struct termios *newtio); 
 
 int llwrite(int fd, char * data, int *data_length); 
 
-int llread(int fd, char * buffer, char CMD_expected); 
+int llread(int fd, char * buffer); 
 
 int llclose(); 
 
 /* AUX API -------------------------------------------------------------------*/ 
 
-int send_frame_su(int fd, char ADDR, char CMD);
+int send_frame_su(int fd, char ADDR, char CMD); 
+
+int read_frame_i(int fd, char *buffer, char CMD_expected); 
 
 inline int send_frame_i(int fd, char * frame, int frame_length); 
 
@@ -61,5 +64,9 @@ int openDescriptor(char *port, struct termios *oldtio, struct termios *newtio);
 int handle_alarm_timeout(); 
 
 void alarm_off(); 
+
+/* OTHERS ---------------------------------------------------------------------*/ 
+
+
 
 #endif

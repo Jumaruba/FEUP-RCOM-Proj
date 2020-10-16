@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     // SET CHANNEL
     fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio); 
     char *buffer = (char *) malloc(MAX_SIZE_ARRAY*sizeof(char)); 
-    int length = llread(fd, buffer, CMD_S0);  
+    int length = llread(fd, buffer);  
 
 
     printf("\n TRAMA INFO: \n"); 
