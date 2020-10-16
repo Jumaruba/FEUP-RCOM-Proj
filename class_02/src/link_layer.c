@@ -43,9 +43,7 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
     return fd;
 }
 
-int llwrite(int fd, byte *data, int *data_length)
-{
-
+int llwrite(int fd, byte *data, int *data_length) {
     static int s_writer = 0, r_writer = 1;  
 
     byte * frame  = (byte*) malloc(MAX_SIZE_ARRAY*sizeof(byte));
@@ -79,28 +77,32 @@ int llwrite(int fd, byte *data, int *data_length)
 }
 
 int llread(int fd, byte * data){   
-    int rejects = 0;                    
+    int tries = 0;                    
     int data_length = -1;
-    int s_reader = 0, r_reader = 1; 
+    static int s_reader = 0, r_reader = 1;  // s and r arguments. 
 
-    while(rejects < MAX_REJECTS){  
-        data_length = read_frame_i(fd, data, CMD_S(s_reader));
-        
-        byte_destuffing(data, &data_length);   
+    while(tries < TRIES){  
+        if ((data_length = read_frame_i(fd, data, CMD_S(s_reader))) > 0){
     
-        //CHECK BCC2
-        byte check_BCC2 = 0x00; 
-        create_BCC2(data, &check_BCC2, data_length-1);  
+            byte_destuffing(data, &data_length);   
+            // Check the bcc2. 
+            byte check_BCC2 = 0x00; 
+            create_BCC2(data, &check_BCC2, data_length-1);  
 
-        if (check_BCC2 != data[data_length-1]) {
-            send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
-            rejects ++; 
+            if (check_BCC2 != data[data_length-1]) {
+                send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
+                tries ++; 
+            }
+            else{ 
+                send_frame_nnsp(fd, A, CMD_RR(r_reader));  
+                r_reader = SWITCH(r_reader); 
+                s_reader = SWITCH(s_reader); 
+                return data_length;
+            }
         }
-        else{ 
-            send_frame_nnsp(fd, A, CMD_RR(r_reader));  
-            r_reader = SWITCH(r_reader); 
-            s_reader = SWITCH(s_reader); 
-            return data_length;
+        else{
+            send_frame_nnsp(fd, A, CMD_REJ(r_reader)); 
+            tries++; 
         }
     }
     return -1;
@@ -185,7 +187,8 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
     byte byte; 
 
     while(curr_state < 5){
-        read(fd, &byte, 1); 
+        if (read(fd, &byte, 1) == -1)
+            return -1; 
 
         switch (curr_state)
         { 

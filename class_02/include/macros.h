@@ -19,7 +19,6 @@
 
 /* MACROS FOR THE ALARM AND LOOPS--------------------------------------------------- */  
 
-#define MAX_REJECTS     3               /* Max number of rejection in the information frame*/
 #define TRIES           3               /* Tries to read the receptor answers*/ 
 #define TIMEOUT         3               /* Time to wait for the receptor answers*/
 
