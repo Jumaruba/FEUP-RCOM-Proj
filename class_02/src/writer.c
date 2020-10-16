@@ -19,13 +19,16 @@ int main(int argc, char **argv)
     // SET CHANNEL 
     fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio); 
 
-    byte * data = (byte*)malloc(sizeof(byte)*3); 
-    data[0] = 0xA0; 
-    data[1] = ESC; 
-    data[2] = ESC; 
-    int length = 3; 
-    llwrite(fd , data, &length);  
+    byte * data = (byte*)malloc(sizeof(byte)*5); 
 
+    data[0] = 0x01; 
+    data[1] = FLAG; 
+    data[2] = ESC; 
+    data[3] = 0xA0; 
+    data[4] = 0xFF; 
+
+    int length = 5; 
+    llwrite(fd, data, &length);
     // CLOSE
     
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1)

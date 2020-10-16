@@ -44,28 +44,39 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 
 int llwrite(int fd, byte *data, int *data_length)
 {
-    int s_writer = 0, r_writer = 1; 
+
+    static int s_writer = 0, r_writer = 1;  
 
     byte * frame  = (byte*) malloc(MAX_SIZE_ARRAY*sizeof(byte));
-    int curr_state = 0 ; 
+    int res = -1 ; 
     
     if (*data_length < 0) {
         printf("Length must be positive");
         return -1;
     }
     
-    int frame_length = create_frame_i(data, frame, *data_length, CMD_S0);    
-    while(curr_state < 5){
+    //TODO : situation 1, no answer 
+    //TODO : situation 2, send again the message 
+
+    int frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
+
+    while(res != 0){
         // Creating the info to send
         alarm(3); 
+        // TODO: delete this later 
         for (int i = 0 ; i <  frame_length; i++)
             printf("%02x\n", frame[i]); 
+        //----- 
+
         write(fd, frame, frame_length); 
         
         byte CMD; 
-        read_frame_timeout_nn(fd, &CMD); 
+        res = read_frame_timeout_nn(fd, &CMD); 
+
         if (CMD == CMD_RR(r_writer)){ 
             alarm(0); 
+            r_writer = SWITCH(r_writer); 
+            s_writer = SWITCH(s_writer); 
             return 0; 
         }
         
@@ -74,28 +85,29 @@ int llwrite(int fd, byte *data, int *data_length)
 }
 
 int llread(int fd, byte * buffer){   
-    int s = 0, r = 1; 
     int rejects = 0; 
     int data_length = -1;
+    int s_reader = 0, r_reader = 1; 
 
     while(rejects < MAX_REJECTS){  
-        data_length = read_frame_i(fd, buffer, CMD_S(s));
+        data_length = read_frame_i(fd, buffer, CMD_S(s_reader));
         
         byte_destuffing(buffer, &data_length);   
     
         //CHECK BCC2
         byte check_BCC2 = 0x00; 
         create_BCC2(buffer, &check_BCC2, data_length-1); 
-        if (check_BCC2 != buffer[data_length-1]) {
-            send_frame_nnsp(fd, A, CMD_REJ(r));  
+        // TODO: descomment
+        /*if (check_BCC2 != buffer[data_length-1]) {
+            send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
             rejects ++; 
         }
         else{ 
-            send_frame_nnsp(fd, A, 0x85);  
-            r = SWITCH(r); 
-            s = SWITCH(s); 
+            send_frame_nnsp(fd, A, CMD_RR(r_reader));  
+            r_reader = SWITCH(r_reader); 
+            s_reader = SWITCH(s_reader); 
             return data_length;
-        }
+        }*/
     }
     return -1;
 }
@@ -119,7 +131,9 @@ int read_frame_nn(int fd, byte CMD)
     byte byte;
     while (curr_state < 5)
     {
-        read(fd, &byte, 1);
+        if (read(fd, &byte, 1) == -1) 
+            return -1; 
+
         switch (curr_state)
         {
         // RECEIVE FLAG
@@ -244,7 +258,9 @@ int read_frame_timeout_nn(int fd, byte *CMD){
     byte byte;
     while (curr_state < 5)
     {
-        read(fd, &byte, 1);
+        if (read(fd, &byte, 1) == -1) 
+            return -1;
+
         switch (curr_state)
         {
         // RECEIVE FLAG
@@ -267,10 +283,9 @@ int read_frame_timeout_nn(int fd, byte *CMD){
         // RECEIVE CMD
         case 2:
             printf("case 2: %02x\n", byte);
-            if (byte == CMD_REJ0 || byte == CMD_REJ1 || byte == CMD_RR0 || byte == CMD_RR1){ 
+            if (byte == CMD_REJ(0) || byte == CMD_REJ(1) || byte == CMD_RR(0) || byte == CMD_RR(1)){ 
                 *CMD = byte; 
                 curr_state++;
-                printf("CMD: %02x\n", *CMD);
             } 
             else if (byte == FLAG)
                 curr_state = 1;
@@ -308,6 +323,7 @@ int read_frame_timeout_sp(int fd, byte CMD)
     {
         if (read(fd, &byte, 1) == -1)
             return -1;
+            
         switch (curr_state)
         {
         // RECEIVE FLAG
