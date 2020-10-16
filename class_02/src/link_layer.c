@@ -6,7 +6,7 @@ int numTransmissions = 0;
 int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 {
     int fd;
-    int curr_state = 0;
+    int res = -1;
 
     if (TRANSMITTER == flag)
     {
@@ -16,15 +16,15 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
         siginterrupt(SIGALRM, 1);
 
         // SET
-        while (curr_state < 5)
+        while (res != 0)
         {
             alarm(3);
-            int res = send_frame_nnsp(fd, A, CMD_SET);
+            send_frame_nnsp(fd, A, CMD_SET);
             printSuccess("Written CMD_SET.");
-            curr_state = read_frame_timeout_sp(fd, CMD_UA);
+            res = read_frame_timeout_sp(fd, CMD_UA);
         }
 
-        if (curr_state == 5)
+        if (res == 0)
             alarm_off();
     }
 
@@ -170,13 +170,15 @@ int read_frame_nn(int fd, byte CMD)
         // RECEIVE FLAG
         case 4:
             printf("case 4: %02x\n", byte);
-            if (byte == FLAG)
-                curr_state++;
+            if (byte == FLAG){
+                curr_state++; 
+                return 0; 
+            }
             else
                 curr_state = 0;
         }
     }
-    return 0;
+    return -1;
 }
 
 int read_frame_i(int fd, byte *buffer, byte CMD){
@@ -299,8 +301,10 @@ int read_frame_timeout_nn(int fd, byte *CMD){
         // RECEIVE FLAG
         case 4:
             printf("case 4: %02x\n", byte);
-            if (byte == FLAG)
+            if (byte == FLAG){
                 curr_state++;
+                return 0; 
+            }
             else
                 curr_state = 0;
         }
@@ -362,15 +366,15 @@ int read_frame_timeout_sp(int fd, byte CMD)
             if (byte == FLAG)
             {
                 curr_state++;
-
                 printf("Success reading %x\n", CMD);
-            }
+                return 0; 
+             }
             else
                 curr_state = 0;
         }
     }
 
-    return curr_state;
+    return -1;
 }
 
 int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
