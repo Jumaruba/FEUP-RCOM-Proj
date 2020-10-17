@@ -5,6 +5,23 @@
 
 #define _POSIX_SOURCE       1
 
+
+
+#define DEBUG  1            /* Set zero to don't show prints*/ 
+
+#define PRINT_ERR(format, ...) \
+    do{ \
+    if (DEBUG) \
+    printf("\033[31;1mERR\033[0m: %s:%d ::\033[31;1m" format "\033[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
+    }while(0)
+    
+#define PRINT_SUC(format, ...) \
+    do{ \
+    if (DEBUG) \
+    printf("\033[32;1mSUC\033[0m: %s:%d ::\033[32;1m" format "\033[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
+    }while(0)
+    
+
 #define FALSE               0
 #define TRUE                1
 #define SWITCH(s)           !s

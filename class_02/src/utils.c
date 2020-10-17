@@ -6,10 +6,3 @@ void print_hex(char *s) {
     printf("\n");
 }
 
-void printSuccess(char* text){
-    printf ("\033[32;1mSUCCESS: %s \033[0m\n", text);
-}
-
-void printError(char* text){
-    printf ("\033[31;1mFAILURE: %s \033[0m\n", text);
-}

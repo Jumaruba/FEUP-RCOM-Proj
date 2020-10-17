@@ -7,7 +7,11 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 {
     int fd = -1;
     int res = -1;
-
+    
+    if (flag != TRANSMITTER && flag != RECEPTOR){
+        PRINT_ERR("Actual flag %d. Must be 1 or 0.", flag); 
+        return -1; 
+    }
     if (TRANSMITTER == flag) { 
 
         fd = openDescriptor(port, oldtio, newtio);
@@ -20,10 +24,10 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
         while (res != 0) {
             alarm(3);
             send_frame_nnsp(fd, A, CMD_SET); 
-            printSuccess("Written CMD_SET.");
+            PRINT_SUC("Written CMD_SET.");
             
             if((res = read_frame_timeout_sp(fd, CMD_UA)) == 0)
-                printSuccess("Received UA.");
+                PRINT_SUC("Received UA.");
         }
 
         if (res == 0) alarm_off();
@@ -35,10 +39,10 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 
         // Establishment of the connection. 
         read_frame_nn(fd, CMD_SET);
-        printSuccess("Received CMD_SET with success.");
+        PRINT_SUC("Received CMD_SET with success.");
 
         if (send_frame_nnsp(fd, A, CMD_UA) <= 0)
-            printError("Error sending answer to the emissor.");
+            PRINT_ERR("Error sending answer to the emissor.");
     }
     return fd;
 }
@@ -118,31 +122,31 @@ int llclose(int fd, int flag, struct termios *oldtio){
     int failed_sending = 0, failed_reading = 0; 
 
     if (flag != TRANSMITTER && flag != RECEPTOR){
-        printError("Invalid flag.");
+        PRINT_ERR("Invalid flag.");
         return -1; 
     }
     if (flag == TRANSMITTER){ 
         alarm(3); 
         while(res < 0 && failed_sending < TRIES_SEND){                   
             if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
-                printError("Emissor failed sending CMD_DISC. Sending again...");  
+                PRINT_ERR("Emissor failed sending CMD_DISC. Sending again...");  
                 sleep(DELAY_US);   /* Wait a little before sending again.*/  
                 failed_sending++; 
                 continue; 
-            }else printSuccess("Emissor has sent CMD_DISC."); 
+            }else PRINT_SUC("Emissor has sent CMD_DISC."); 
             failed_sending = 0;     /* Has sent information, resetart failed_sending.*/ 
             if((res = read_frame_nn(fd, CMD_DISC)) < 0){
-                printError("Emissor failed in receive CMD_DISC. Sending CMD_DISC again...");  
+                PRINT_ERR("Emissor failed in receive CMD_DISC. Sending CMD_DISC again...");  
                 continue; 
-            } else printSuccess("Emissor has read CMD_."); 
+            } else PRINT_SUC("Emissor has read CMD_."); 
             // Here doesn't matter if it was sent or not. The emissor must turn off. 
             if (send_frame_nnsp(fd, A, CMD_UA) < 0 )
-                printError("Emissor failed in sending CMD_UA. Turning off.");
-            else printSuccess("Emissor has read CMD_UA."); 
+                PRINT_ERR("Emissor failed in sending CMD_UA. Turning off.");
+            else PRINT_SUC("Emissor has read CMD_UA."); 
             
         } 
         if (failed_sending == TRIES_SEND){
-            printError("Emissor unable to send CMD_DISC. Not turning off."); 
+            PRINT_ERR("Emissor unable to send CMD_DISC. Not turning off."); 
             return -1; 
         }
         else 
@@ -151,21 +155,21 @@ int llclose(int fd, int flag, struct termios *oldtio){
     }else if (flag == RECEPTOR){    
         while(res != 0 && failed_reading < TRIES_READ){
             if((res = read_frame_nn(fd, CMD_DISC)) < 0){
-                printError("Receptor failed reading CMD_DISC"); 
+                PRINT_ERR("Receptor failed reading CMD_DISC"); 
                 failed_reading++;
                 continue; 
             }
-            else printSuccess("Receptor read CMD_DISC"); 
+            else PRINT_SUC("Receptor read CMD_DISC"); 
         }
         printf("%d\n", failed_sending);  
         res = -1; 
         while(res < 0 && failed_sending < TRIES_SEND){
             if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
-                printError("Receptor failed sending CMD_DISC. Trying again..."); 
+                PRINT_ERR("Receptor failed sending CMD_DISC. Trying again..."); 
                 failed_sending++; 
                 continue; 
             }
-            else printSuccess("Receptor sent CMD_UA"); 
+            else PRINT_SUC("Receptor sent CMD_UA"); 
         }
         return closeDescriptor(fd, oldtio); 
     } 
@@ -591,19 +595,14 @@ handle_alarm_timeout()
 {
     numTransmissions++;
     
-    // Colorful messages.
-    char * message = (char*)malloc(MAX_SIZE_ARRAY);
-    sprintf(message, "Time out #%d", numTransmissions); 
-    printError(message); 
+    PRINT_ERR("Time out #%d", numTransmissions); 
 
     if (numTransmissions > TRIES)
     {
-        printError("Number of tries exceeded\n"); 
-        free(message); 
+        PRINT_ERR("Number of tries exceeded\n"); 
         exit(-1);
     }
 
-    free(message);
 }
 
 void alarm_off()
