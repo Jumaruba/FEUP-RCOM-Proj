@@ -23,9 +23,6 @@ int main(int argc, char **argv) {
         printf("%02x\n", buffer[i]); 
 
 
-    tcsetattr(fd, TCSANOW, &oldtio);
-    sleep(1);
-    close(fd);
-    return 0;
+    llclose(fd, RECEPTOR, &oldtio); 
 }
 

@@ -31,13 +31,7 @@ int main(int argc, char **argv)
     llwrite(fd, data, &length);
     // CLOSE
     
-    if (tcsetattr(fd, TCSANOW, &oldtio) == -1)
-    {
-        perror("tcsetattr");
-        exit(-1);
-    }
-    close(fd);
-    return 0;
+    llclose(fd, TRANSMITTER, &oldtio); 
 }
 
 

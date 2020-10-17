@@ -108,6 +108,71 @@ int llread(int fd, byte * data){
     return -1;
 }
 
+//TODO: confirm with the professor. Case we don't the UA from the emissor, do we turn off?  
+//TODO: Case we do not receive the DISC from the emissor, do we turn off? -> doing NOT turning off
+//TODO: is there timeout here? I did it with.  
+//TODO: if timeout, we just exit the program or we init the llclose? I'm doing exit(-1)
+int llclose(int fd, int flag, struct termios *oldtio){ 
+
+    int res = -1; 
+    int failed_sending = 0, failed_reading = 0; 
+
+    if (flag != TRANSMITTER && flag != RECEPTOR){
+        printError("Invalid flag.");
+        return -1; 
+    }
+    if (flag == TRANSMITTER){ 
+        alarm(3); 
+        while(res < 0 && failed_sending < TRIES_SEND){                   
+            if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
+                printError("Emissor failed sending CMD_DISC. Sending again...");  
+                sleep(DELAY_US);   /* Wait a little before sending again.*/  
+                failed_sending++; 
+                continue; 
+            }else printSuccess("Emissor has sent CMD_DISC."); 
+            failed_sending = 0;     /* Has sent information, resetart failed_sending.*/ 
+            if((res = read_frame_nn(fd, CMD_DISC)) < 0){
+                printError("Emissor failed in receive CMD_DISC. Sending CMD_DISC again...");  
+                continue; 
+            } else printSuccess("Emissor has read CMD_."); 
+            // Here doesn't matter if it was sent or not. The emissor must turn off. 
+            if (send_frame_nnsp(fd, A, CMD_UA) < 0 )
+                printError("Emissor failed in sending CMD_UA. Turning off.");
+            else printSuccess("Emissor has read CMD_UA."); 
+            
+        } 
+        if (failed_sending == TRIES_SEND){
+            printError("Emissor unable to send CMD_DISC. Not turning off."); 
+            return -1; 
+        }
+        else 
+            return closeDescriptor(fd, oldtio); 
+
+    }else if (flag == RECEPTOR){    
+        while(res != 0 && failed_reading < TRIES_READ){
+            if((res = read_frame_nn(fd, CMD_DISC)) < 0){
+                printError("Receptor failed reading CMD_DISC"); 
+                failed_reading++;
+                continue; 
+            }
+            else printSuccess("Receptor read CMD_DISC"); 
+        }
+        printf("%d\n", failed_sending);  
+        res = -1; 
+        while(res < 0 && failed_sending < TRIES_SEND){
+            if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
+                printError("Receptor failed sending CMD_DISC. Trying again..."); 
+                failed_sending++; 
+                continue; 
+            }
+            else printSuccess("Receptor sent CMD_UA"); 
+        }
+        return closeDescriptor(fd, oldtio); 
+    } 
+    return -1; 
+
+}
+
 int send_frame_nnsp(int fd, byte ADDR, byte CMD)
 {
     byte frame[5];
@@ -117,8 +182,7 @@ int send_frame_nnsp(int fd, byte ADDR, byte CMD)
     frame[3] = frame[1] ^ frame[2];
     frame[4] = FLAG;
 
-    int res = write(fd, frame, 5);
-    return res;
+    return write(fd, frame, 5);
 }
 
 int read_frame_nn(int fd, byte CMD)
@@ -513,6 +577,14 @@ int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
     printf("New termios structure set\n");
 
     return fd;
+}
+
+int closeDescriptor(int fd, struct termios * oldtio){
+    if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
+        perror("tcsetattr");
+        exit(-1);
+    }
+    return close(fd);
 }
 
 handle_alarm_timeout()

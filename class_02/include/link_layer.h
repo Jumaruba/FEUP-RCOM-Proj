@@ -43,7 +43,7 @@ int llwrite(int fd, byte* data, int *data_length);
 
 int llread(int fd, byte * data); 
 
-int llclose(); 
+int llclose(int fd, int flag, struct termios * oldtio); 
 
 /* AUX API -------------------------------------------------------------------*/ 
 

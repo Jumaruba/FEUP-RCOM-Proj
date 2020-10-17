@@ -3,15 +3,15 @@
 
 
 
-#define _POSIX_SOURCE 1
+#define _POSIX_SOURCE       1
 
-#define FALSE 0
-#define TRUE 1
+#define FALSE               0
+#define TRUE                1
 #define SWITCH(s)           !s
 #define BIT(n)              (1 << n)
-#define MAX_SIZE_ARRAY      16383    // The actual max size is 2^16-1, but we're using less bytes to avoid overflow
-#define MAX_SIZE 255 /* Max size of the package */ 
-
+#define MAX_SIZE_ARRAY      16383   // The actual max size is 2^16-1, but we're using less bytes to avoid overflow
+#define MAX_SIZE            255     /* Max size of the package */ 
+#define DELAY_US            0.2
 /* MACROS FOR THE LLOPEN FLAG ------------------------------------------------------*/  
 
 #define TRANSMITTER         0
@@ -19,14 +19,14 @@
 
 /* MACROS FOR THE ALARM AND LOOPS--------------------------------------------------- */  
 
-#define TRIES           3               /* Tries to read the receptor answers*/ 
-#define TIMEOUT         3               /* Time to wait for the receptor answers*/
-
-
+#define TRIES               3   /* Tries to read the receptor answers*/ //TODO: do I need this? 
+#define TIMEOUT             3   /* Time to wait for the receptor answers*/
+#define TRIES_SEND          3   /* Tries to send the message */ //TODO: do I need this?  
+#define TRIES_READ          3 
 /* MACROS FOR THE PROTOCOL----------------------------------------------------------*/
 
-#define FLAG 0x7E
-#define ESC 0x7D
+#define FLAG                0x7E
+#define ESC                 0x7D
 #define XOR_STUFFING(N)     (N^0x20)
 #define A                   0x03    
 
