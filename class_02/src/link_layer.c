@@ -46,9 +46,8 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
             read_frame_nn(fd, CMD_SET);
             PRINT_SUC("Received CMD_SET with success.");
 
-            //if ((res = send_frame_nnsp(fd, A, CMD_UA)) < 0)
+            if ((res = send_frame_nnsp(fd, A, CMD_UA)) < 0)
                 PRINT_ERR("Error sending answer to the emissor.");
-                printf("%d\n", res);
         } 
     }
     return fd;
