@@ -12,21 +12,26 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
         PRINT_ERR("Actual flag %d. Must be 1 or 0.", flag); 
         return -1; 
     }
+
     if (TRANSMITTER == flag) { 
 
-        fd = openDescriptor(port, oldtio, newtio);
+        fd = openDescriptor(port, oldtio, newtio); 
 
         // Install the alarm. 
-        signal(SIGALRM, handle_alarm_timeout);
-        siginterrupt(SIGALRM, 1);
+        if (signal(SIGALRM, handle_alarm_timeout) == SIG_ERR){
+            printf("Not possible to install signal, SIG_ERR."); 
+            exit(-1); 
+        }
+        siginterrupt(SIGALRM, TRUE);
 
-        // Establishment of the connection. 
-        while (res != 0) {
+        // Establishment of the connection.  
+        while (res != 0) { 
             alarm(3);
-            send_frame_nnsp(fd, A, CMD_SET); 
-            PRINT_SUC("Written CMD_SET.");
+            if (send_frame_nnsp(fd, A, CMD_SET) < 0)
+                PRINT_ERR("Not possible to send CMD_SET. Sending again after timeout..."); 
+            else PRINT_SUC("Written CMD_SET.");
             
-            if((res = read_frame_timeout_sp(fd, CMD_UA)) == 0)
+            if((res = read_frame_timeout_sp(fd, CMD_UA)) >= 0)
                 PRINT_SUC("Received UA.");
         }
 
@@ -36,13 +41,15 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
     else if (RECEPTOR == flag)
     {
         fd = openDescriptor(port, oldtio, newtio);
+        while(res < 0){
+            // Establishment of the connection. 
+            read_frame_nn(fd, CMD_SET);
+            PRINT_SUC("Received CMD_SET with success.");
 
-        // Establishment of the connection. 
-        read_frame_nn(fd, CMD_SET);
-        PRINT_SUC("Received CMD_SET with success.");
-
-        if (send_frame_nnsp(fd, A, CMD_UA) <= 0)
-            PRINT_ERR("Error sending answer to the emissor.");
+            //if ((res = send_frame_nnsp(fd, A, CMD_UA)) < 0)
+                PRINT_ERR("Error sending answer to the emissor.");
+                printf("%d\n", res);
+        } 
     }
     return fd;
 }
@@ -545,17 +552,14 @@ int byte_destuffing(byte * frame, int * frame_length){
 
 int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
 {
-    int fd = open(port, O_RDWR | O_NOCTTY);
-    if (fd < 0)
-    {
-        printf("%s\n", port);
-        perror(port);
-        exit(-1);
+    int fd = -1; 
+    if((fd = open(port, O_RDWR | O_NOCTTY)) < 0) {
+        PRINT_ERR("Invalid port: %s", port);
+        exit(-1); 
     }
 
-    if (tcgetattr(fd, oldtio) == -1)
-    { /* save current port settings */
-        perror("tcgetattr");
+    if (tcgetattr(fd, oldtio) == -1) { 
+        PRINT_ERR("tcgetattr.");
         exit(-1);
     }
 
@@ -572,13 +576,12 @@ int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
 
     tcflush(fd, TCIOFLUSH);
 
-    if (tcsetattr(fd, TCSANOW, newtio) == -1)
-    {
-        perror("tcsetattr");
+    if (tcsetattr(fd, TCSANOW, newtio) == -1) {
+        PRINT_ERR("tcsetattr");
         exit(-1);
     }
 
-    printf("New termios structure set\n");
+    PRINT_SUC("Function openDescriptor executed with success."); 
 
     return fd;
 }
