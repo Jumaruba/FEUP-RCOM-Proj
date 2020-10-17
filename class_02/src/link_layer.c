@@ -486,10 +486,10 @@ void create_BCC2(byte * data, byte* buffer, int data_length)
 int byte_stuffing(byte * frame, int* frame_length)
 { 
     byte * new_frame ;      
-    int extra_space = 0;        /* The extra space needed to be added. */
-    int new_frame_length = 0;   /* The new length of the string frame. */ 
+    int extra_space = 0;        /* The extra space needed to be added to the frame. */
+    int new_frame_length = 0;   /* The new length of the string frame (extra + length). */ 
     int actual_pos = 0;         /* Position in the new_frame. */ 
-    int counter = 0;            
+    int counter = 0;            /* Number of escapes and flags found in the second iteration. */
 
     //  First find all the flags and scapes to avoid multiple reallocs. 
     for (int i = 0 ; i < *frame_length; i++)
