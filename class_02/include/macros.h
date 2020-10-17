@@ -1,14 +1,11 @@
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
-
-
-
 #define _POSIX_SOURCE       1
 
+/* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
-
-#define DEBUG  1            /* Set zero to don't show prints*/ 
-
+#define DEBUG  1            /* Set zero to don't show prints. */ 
+#define SHOW_OUTPUT 1       /* Show the information inside the state machines. */
 #define PRINT_ERR(format, ...) \
     do{ \
     if (DEBUG) \
@@ -19,28 +16,33 @@
     do{ \
     if (DEBUG) \
     printf("\033[32;1mSUC\033[0m: %s:%d\t::\033[32;1m" format "\033[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
-    }while(0)
-    
+    }while(0) 
 
-#define FALSE               0
-#define TRUE                1
-#define SWITCH(s)           !s
-#define BIT(n)              (1 << n)
-#define MAX_SIZE_ARRAY      16383   // The actual max size is 2^16-1, but we're using less bytes to avoid overflow
-#define MAX_SIZE            255     /* Max size of the package */ 
-#define DELAY_US            0.2
-/* MACROS FOR THE LLOPEN FLAG ------------------------------------------------------*/  
+#define PRINT_NOTE(format, ...) \
+    do{ \
+    if (DEBUG) \
+    printf("\e[1;34mNOTE\e[0m: %s:%d\t::\e[1;34m" format "\e[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
+    }while(0)
+
+#define PRINTF(format, ...) \
+    do{ \
+    if (SHOW_OUTPUT) \
+    printf("\e[1;34m"format "\e[0m", ##__VA_ARGS__ ); \
+    }while(0)
+
+
+/* MACROS FOR THE LLOPEN FLAG --------------------------------------------------------------------------------------*/  
 
 #define TRANSMITTER         0
 #define RECEPTOR            1 
 
-/* MACROS FOR THE ALARM AND LOOPS--------------------------------------------------- */  
+/* MACROS FOR THE ALARM AND LOOPS---------------------------------------------------------------------------------- */  
 
 #define TRIES               3   /* Tries to read the receptor answers*/ //TODO: do I need this? 
 #define TIMEOUT             3   /* Time to wait for the receptor answers*/
 #define TRIES_SEND          3   /* Tries to send the message */ //TODO: do I need this?  
 #define TRIES_READ          3 
-/* MACROS FOR THE PROTOCOL----------------------------------------------------------*/
+/* MACROS FOR THE PROTOCOL-------------------------------------------------------------------------------------------*/
 
 #define FLAG                0x7E
 #define ESC                 0x7D
@@ -56,4 +58,11 @@
 #define CMD_RR(r)           (0x05 | ( r << 7 ))
 #define CMD_REJ(r)          (0x01 | ( r << 7 ))
 
-
+/* OTHERS  ---------------------------------------------------------------------------------------------------------*/
+#define FALSE               0
+#define TRUE                1
+#define SWITCH(s)           !s
+#define BIT(n)              (1 << n)
+#define MAX_SIZE_ARRAY      16383   // The actual max size is 2^16-1, but we're using less bytes to avoid overflow
+#define MAX_SIZE            255     /* Max size of the package */ 
+#define DELAY_US            0.2

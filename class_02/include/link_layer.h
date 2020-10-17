@@ -49,15 +49,13 @@ int llclose(int fd, int flag, struct termios * oldtio);
 
 /* Read and send frames */ 
 
-int send_frame_nnsp(int fd, byte ADDR, byte CMD); 
+int read_frame_supervision(int fd, byte *CMD, int r);  
+
+int read_frame_not_supervision(int fd, byte CMD);  
+
+int send_frame_nnsp(int fd, byte ADDR, byte CMD);  
 
 int read_frame_i(int fd, byte *buffer, byte CMD); 
-
-int read_frame_nn(int fd, byte CMD);  
-
-int read_frame_timeout_nn(int fd, byte *CMD); 
-
-int read_frame_timeout_sp(int fd, byte CMD);   
 
 /* Create information frame */ 
 

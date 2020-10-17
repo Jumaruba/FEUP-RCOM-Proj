@@ -19,7 +19,7 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 
         // Install the alarm. 
         if (signal(SIGALRM, handle_alarm_timeout) == SIG_ERR){
-            printf("Not possible to install signal, SIG_ERR."); 
+            PRINT_ERR("Not possible to install signal, SIG_ERR."); 
             exit(-1); 
         }
         siginterrupt(SIGALRM, TRUE);
@@ -31,7 +31,7 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
                 PRINT_ERR("Not possible to send CMD_SET. Sending again after timeout..."); 
             else PRINT_SUC("Written CMD_SET.");
             
-            if((res = read_frame_timeout_sp(fd, CMD_UA)) >= 0)
+            if((res = read_frame_not_supervision(fd, CMD_UA)) >= 0)
                 PRINT_SUC("Received UA.");
         }
 
@@ -43,7 +43,7 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
         fd = openDescriptor(port, oldtio, newtio);
         while(res < 0){
             // Establishment of the connection. 
-            read_frame_nn(fd, CMD_SET);
+            read_frame_not_supervision(fd, CMD_SET);
             PRINT_SUC("Received CMD_SET with success.");
 
             if ((res = send_frame_nnsp(fd, A, CMD_UA)) < 0)
@@ -53,30 +53,32 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
     return fd;
 }
 
+// TODO: if not receive the correct REJ or RR, does it keep stuck in state machine? 
 int llwrite(int fd, byte *data, int *data_length) {
     static int s_writer = 0, r_writer = 1;  
-
-    byte * frame  = (byte*) malloc(MAX_SIZE_ARRAY*sizeof(byte));
-    int res = -1 ; 
+    int res = -1 ;  
+    byte CMD;  
     
+    byte * frame  = (byte*) malloc(MAX_SIZE_ARRAY*sizeof(byte));    // Alloc max size.  
+
     if (*data_length < 0) {
-        printf("Length must be positive");
+        PRINT_ERR("Length must be positive, actual: %d", *data_length);
         return -1;
     }
 
+    // Creating the info to send
     int frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
 
     while(res != 0){
-        // Creating the info to send
         alarm(3); 
-
-        write(fd, frame, frame_length); 
+        if ((res = write(fd, frame, frame_length)) < 0) 
+            PRINT_ERR("Not possible to write info frame. Sending again after timeout..."); 
         
-        byte CMD; 
-        res = read_frame_timeout_nn(fd, &CMD); 
+        if ((res = read_frame_supervision(fd, &CMD, r_writer)) < 0) 
+            PRINT_ERR("Not possible to read info frame. Sending again..."); 
 
-        if (CMD == CMD_RR(r_writer)){ 
-            alarm(0); 
+        if (res >= 0){  
+            alarm_off();
             r_writer = SWITCH(r_writer); 
             s_writer = SWITCH(s_writer); 
             return 0; 
@@ -86,34 +88,43 @@ int llwrite(int fd, byte *data, int *data_length) {
     
 }
 
+// TODO: do i need a number of tries for the read? 
 int llread(int fd, byte * data){   
-    int tries = 0;                    
-    int data_length = -1;
+    int tries = 0, data_length = -1; 
     static int s_reader = 0, r_reader = 1;  // s and r arguments. 
+    byte  check_BCC2; 
 
-    while(tries < TRIES){  
-        if ((data_length = read_frame_i(fd, data, CMD_S(s_reader))) > 0){
-    
-            byte_destuffing(data, &data_length);   
-            // Check the bcc2. 
-            byte check_BCC2 = 0x00; 
-            create_BCC2(data, &check_BCC2, data_length-1);  
+    while(tries < TRIES_READ){  
+        PRINT_NOTE("s_reader = %d", CMD_S(s_reader));
+        if ((data_length = read_frame_i(fd, data, CMD_S(s_reader))) < 0){
+            PRINT_ERR("Not possible to read information frame. Sending CMD_REJ..."); 
+            sleep(DELAY_US); 
+            PRINT_NOTE("Trying to read again."); 
+            tries ++; 
+            continue; 
+        } 
 
-            if (check_BCC2 != data[data_length-1]) {
-                send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
-                tries ++; 
-            }
-            else{ 
-                send_frame_nnsp(fd, A, CMD_RR(r_reader));  
-                r_reader = SWITCH(r_reader); 
-                s_reader = SWITCH(s_reader); 
-                return data_length;
-            }
+        tries = 0;          // Since it was possible to read, restart tries. 
+        byte_destuffing(data, &data_length);   
+
+        // Check the bcc2.  
+        check_BCC2 = 0x00; 
+        create_BCC2(data, &check_BCC2, data_length-1);  
+
+        if (check_BCC2 != data[data_length-1]) { 
+            PRINT_ERR("Wrong bcc2. Expected: %02x, Received: %02x.", check_BCC2, data[data_length-1]); 
+            PRINT_NOTE("Sending CMD_REJ."); 
+            send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
+            continue; 
+        }else PRINT_SUC("BCC2 ok!"); 
+
+        if (send_frame_nnsp(fd, A, CMD_RR(r_reader)) > 0){
+            PRINT_SUC("CMD_RR with R=%d sent.", r_reader); 
+            r_reader = SWITCH(r_reader); 
+            s_reader = SWITCH(s_reader); 
+            return data_length;
         }
-        else{
-            send_frame_nnsp(fd, A, CMD_REJ(r_reader)); 
-            tries++; 
-        }
+        
     }
     return -1;
 }
@@ -125,62 +136,182 @@ int llread(int fd, byte * data){
 int llclose(int fd, int flag, struct termios *oldtio){ 
 
     int res = -1; 
-    int failed_sending = 0, failed_reading = 0; 
 
     if (flag != TRANSMITTER && flag != RECEPTOR){
         PRINT_ERR("Invalid flag.");
-        return -1; 
+        exit(-1); 
     }
+
     if (flag == TRANSMITTER){ 
-        alarm(3); 
-        while(res < 0 && failed_sending < TRIES_SEND){                   
+        while(res < 0){                   
+            alarm(3); 
             if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
-                PRINT_ERR("Emissor failed sending CMD_DISC. Sending again...");  
+                PRINT_ERR("Failed sending CMD_DISC. Sending again...");  
                 sleep(DELAY_US);   /* Wait a little before sending again.*/  
-                failed_sending++; 
+            }else PRINT_SUC("Sent CMD_DISC.");   
+            
+            if((res = read_frame_not_supervision(fd, CMD_DISC)) < 0){
+                PRINT_ERR("Failed in receive CMD_DISC. Sending CMD_DISC again...");   
                 continue; 
-            }else PRINT_SUC("Emissor has sent CMD_DISC."); 
-            failed_sending = 0;     /* Has sent information, resetart failed_sending.*/ 
-            if((res = read_frame_nn(fd, CMD_DISC)) < 0){
-                PRINT_ERR("Emissor failed in receive CMD_DISC. Sending CMD_DISC again...");  
-                continue; 
-            } else PRINT_SUC("Emissor has read CMD_."); 
-            // Here doesn't matter if it was sent or not. The emissor must turn off. 
-            if (send_frame_nnsp(fd, A, CMD_UA) < 0 )
-                PRINT_ERR("Emissor failed in sending CMD_UA. Turning off.");
-            else PRINT_SUC("Emissor has read CMD_UA."); 
+            } else {
+                PRINT_SUC("Emissor has read CMD_DISC.");  
+                alarm_off(); 
+            }
+            
+            // Here doesn't matter if it was sent or not. The emissor must turn off.   
+            if (send_frame_nnsp(fd, A, CMD_UA) < 0 ){
+                PRINT_ERR("Emissor failed in sending CMD_UA. Turning off...");
+            }
+            else PRINT_SUC("Emissor has sent CMD_UA."); 
             
         } 
-        if (failed_sending == TRIES_SEND){
-            PRINT_ERR("Emissor unable to send CMD_DISC. Not turning off."); 
-            return -1; 
-        }
-        else 
-            return closeDescriptor(fd, oldtio); 
+        return closeDescriptor(fd, oldtio); 
 
     }else if (flag == RECEPTOR){    
-        while(res != 0 && failed_reading < TRIES_READ){
-            if((res = read_frame_nn(fd, CMD_DISC)) < 0){
+        while(res < 0){
+            if((res = read_frame_not_supervision(fd, CMD_DISC)) < 0){
                 PRINT_ERR("Receptor failed reading CMD_DISC"); 
-                failed_reading++;
                 continue; 
-            }
-            else PRINT_SUC("Receptor read CMD_DISC"); 
-        }
-        printf("%d\n", failed_sending);  
-        res = -1; 
-        while(res < 0 && failed_sending < TRIES_SEND){
+            } else PRINT_SUC("Receptor read CMD_DISC");  
+
             if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
-                PRINT_ERR("Receptor failed sending CMD_DISC. Trying again..."); 
-                failed_sending++; 
+                PRINT_ERR("Receptor failed sending CMD_DISC. Reading CMD_DISC again...");   
                 continue; 
-            }
-            else PRINT_SUC("Receptor sent CMD_UA"); 
+            } else PRINT_SUC("Receptor sent CMD_DISC");   
+
+            if ((res = read_frame_not_supervision(fd, CMD_UA))){
+                PRINT_ERR("Receptor not able to receive CMD_UA. Reading CMD_DISC again..."); 
+                continue; 
+            }else PRINT_SUC("Receptor received CMD_UA");
+
+            return closeDescriptor(fd, oldtio); 
         }
-        return closeDescriptor(fd, oldtio); 
     } 
     return -1; 
+}
 
+int read_frame_supervision(int fd, byte *CMD, int r){
+   int curr_state = 0; /* byte that is being read. From 0 to 4.*/
+    byte byte;
+
+    PRINTF("--READ SUPERVISION FRAME [RR, REJ]--\n"); 
+    while (TRUE)
+    {
+        if (read(fd, &byte, 1) == -1) 
+            return -1;
+
+        switch (curr_state)
+        {
+        // RECEIVE FLAG
+        case 0: 
+
+            PRINTF("case 0: %02x\n", byte);
+            if (byte == FLAG)
+                curr_state++;
+            break;
+
+        // RECEIVE ADDR
+        case 1:
+            PRINTF("case 1: %02x\n", byte);
+            if (byte == A)
+                curr_state++;
+            else if (byte != FLAG)
+                curr_state = 0;
+            break;
+
+        // RECEIVE CMD
+        case 2:
+            PRINTF("case 2: %02x\n", byte);
+            if (byte == CMD_REJ(r) || byte == CMD_RR(r)){
+                *CMD = byte; 
+                curr_state++;
+            } 
+            else if (byte == FLAG)
+                curr_state = 1;
+            else
+                curr_state = 0;
+            break;
+        // RECEIVE BCC
+        case 3:
+            PRINTF("case 3: %02x\n", byte);
+            if (byte == (*CMD ^ A))
+                curr_state++;
+            else if (byte == FLAG)
+                curr_state = 1;
+            else
+                curr_state = 0;
+            break;
+
+        // RECEIVE FLAG
+        case 4:
+            PRINTF("case 4: %02x\n", byte);
+            if (byte == FLAG) 
+                return 0; 
+            else
+                curr_state = 0;
+        }
+    }
+    return curr_state;
+}
+
+int read_frame_not_supervision(int fd, byte CMD)
+{
+    int curr_state = 0; /* byte that is being read. From 0 to 4.*/
+    byte data;
+    PRINTF("--READ NOT SUPERVISION FRAME [UA, DISC, SET]--\n");
+    while (TRUE) { 
+
+        if (read(fd, &data, 1) == -1) 
+            return -1; 
+
+        switch (curr_state) { 
+
+        // RECEIVE FLAG
+        case 0: 
+
+            PRINTF("case 0: %02x\n", data);
+            if (data == FLAG)
+                curr_state++;
+            break;
+
+        // RECEIVE ADDR
+        case 1:
+            PRINTF("case 1: %02x\n", data);
+            if (data == A)
+                curr_state++;
+            else if (data != FLAG)
+                curr_state = 0;
+            break;
+
+        // RECEIVE CMD
+        case 2:
+            PRINTF("case 2: %02x\n", data);
+            if (data == CMD)
+                curr_state++;
+            else if (data == FLAG)
+                curr_state = 1;
+            else
+                curr_state = 0;
+            break;
+        // RECEIVE BCC
+        case 3:
+            PRINTF("case 3: %02x\n", data);
+            if (data == (CMD ^ A))
+                curr_state++;
+            else if (data == FLAG)
+                curr_state = 1;
+            else
+                curr_state = 0;
+            break;
+
+        // RECEIVE FLAG
+        case 4:
+            PRINTF("case 4: %02x\n", data);
+            if (data == FLAG) return 0; 
+            else curr_state = 0;
+        }
+    }
+    return -1;
 }
 
 int send_frame_nnsp(int fd, byte ADDR, byte CMD)
@@ -195,71 +326,11 @@ int send_frame_nnsp(int fd, byte ADDR, byte CMD)
     return write(fd, frame, 5);
 }
 
-int read_frame_nn(int fd, byte CMD)
-{
-    int curr_state = 0; /* byte that is being read. From 0 to 4.*/
-    byte data;
-
-    while (TRUE) { 
-
-        if (read(fd, &data, 1) == -1) 
-            return -1; 
-
-        switch (curr_state) { 
-
-        // RECEIVE FLAG
-        case 0: 
-
-            printf("case 0: %02x\n", data);
-            if (data == FLAG)
-                curr_state++;
-            break;
-
-        // RECEIVE ADDR
-        case 1:
-            printf("case 1: %02x\n", data);
-            if (data == A)
-                curr_state++;
-            else if (data != FLAG)
-                curr_state = 0;
-            break;
-
-        // RECEIVE CMD
-        case 2:
-            printf("case 2: %02x\n", data);
-            if (data == CMD)
-                curr_state++;
-            else if (data == FLAG)
-                curr_state = 1;
-            else
-                curr_state = 0;
-            break;
-        // RECEIVE BCC
-        case 3:
-            printf("case 3: %02x\n", data);
-            if (data == (CMD ^ A))
-                curr_state++;
-            else if (data == FLAG)
-                curr_state = 1;
-            else
-                curr_state = 0;
-            break;
-
-        // RECEIVE FLAG
-        case 4:
-            printf("case 4: %02x\n", data);
-            if (data == FLAG) return 0; 
-            else curr_state = 0;
-        }
-    }
-    return -1;
-}
-
 int read_frame_i(int fd, byte *buffer, byte CMD){
     int curr_state= 0, info_length = -1; 
-
     byte byte; 
 
+    PRINTF("--READ FRAME I--\n"); 
     while(curr_state < 5){
         if (read(fd, &byte, 1) == -1)
             return -1; 
@@ -269,13 +340,13 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
             // RECEIVE FLAG
             case 0: 
                 info_length = 0; 
-                printf("case 0: %02x\n", byte);
+                PRINTF("case 0: %02x\n", byte);
                 if (FLAG == byte) 
                     curr_state ++;  
                 break; 
             // RECEIVE ADDR 
             case 1: 
-                printf("case 1: %02x\n", byte); 
+                PRINTF("case 1: %02x\n", byte); 
                 if (A == byte)
                     curr_state ++; 
                 else if (FLAG != byte) 
@@ -285,7 +356,7 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
 
             // RECEIVE CMD
             case 2: 
-                printf("case 2: %02x\n", byte);  
+                PRINTF("case 2: %02x\n", byte);  
                 if (byte == CMD)
                     curr_state++;
                 else if (byte == FLAG) 
@@ -296,7 +367,7 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
 
             // RECEIVE BCC1
             case 3: 
-                printf("case 3: %02x\n", byte);    
+                PRINTF("case 3: %02x\n", byte);    
                 if (byte == (CMD ^ A))
                     curr_state ++; 
                 else if (byte == FLAG) 
@@ -312,7 +383,7 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
                 break;
             // RECEIVE INFO 
             case 4:
-                printf("case 4: %02x\n", byte);
+                PRINTF("case 4: %02x\n", byte);
                 if (byte != FLAG){
                     buffer[info_length++] = byte;  
                 }
@@ -323,138 +394,13 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
     return info_length;
 }
 
-int read_frame_timeout_nn(int fd, byte *CMD){
-   int curr_state = 0; /* byte that is being read. From 0 to 4.*/
-    byte byte;
-
-    while (curr_state < 5)
-    {
-        if (read(fd, &byte, 1) == -1) 
-            return -1;
-
-        switch (curr_state)
-        {
-        // RECEIVE FLAG
-        case 0: 
-
-            printf("case 0: %02x\n", byte);
-            if (byte == FLAG)
-                curr_state++;
-            break;
-
-        // RECEIVE ADDR
-        case 1:
-            printf("case 1: %02x\n", byte);
-            if (byte == A)
-                curr_state++;
-            else if (byte != FLAG)
-                curr_state = 0;
-            break;
-
-        // RECEIVE CMD
-        case 2:
-            printf("case 2: %02x\n", byte);
-            if (byte == CMD_REJ(0) || byte == CMD_REJ(1) || byte == CMD_RR(0) || byte == CMD_RR(1)){ 
-                *CMD = byte; 
-                curr_state++;
-            } 
-            else if (byte == FLAG)
-                curr_state = 1;
-            else
-                curr_state = 0;
-            break;
-        // RECEIVE BCC
-        case 3:
-            printf("case 3: %02x\n", byte);
-            if (byte == (*CMD ^ A))
-                curr_state++;
-            else if (byte == FLAG)
-                curr_state = 1;
-            else
-                curr_state = 0;
-            break;
-
-        // RECEIVE FLAG
-        case 4:
-            printf("case 4: %02x\n", byte);
-            if (byte == FLAG){
-                curr_state++;
-                return 0; 
-            }
-            else
-                curr_state = 0;
-        }
-    }
-    return curr_state;
-}
-
-int read_frame_timeout_sp(int fd, byte CMD)
-{
-    int curr_state = 0;     /* byte that is being read. From 0 to 4.*/
-    byte data;
-
-    while (TRUE) {
-
-        if (read(fd, &data, 1) == -1)
-            return -1;
-
-        switch (curr_state) {
-        // RECEIVE FLAG
-        case 0:
-            printf("case 0: %02x\n", data);
-            if (data == FLAG)
-                curr_state++;
-            break;
-
-        // RECEIVE ADDR
-        case 1:
-            printf("case 1: %02x\n", data);
-            if (data == A)
-                curr_state++;
-            else if (data != FLAG)
-                curr_state = 0;
-            break;
-
-        // RECEIVE CMD
-        case 2:
-            printf("case 2: %02x\n", data);
-            if (data == CMD)
-                curr_state++;
-            else if (data == FLAG)
-                curr_state = 1;
-            else
-                curr_state = 0;
-            break;
-        // RECEIVE BCC
-        case 3:
-            printf("case 3: %02x\n", data);
-            if (data == (CMD ^ A))
-                curr_state++;
-            else if (data == FLAG)
-                curr_state = 1;
-            else
-                curr_state = 0;
-            break;
-
-        // RECEIVE FLAG
-        case 4:
-            printf("case 4: %02x\n", data);
-            if (data == FLAG) return 0; 
-            else curr_state = 0;
-        }
-    }
-
-    return -1;
-}
-
 int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
 { 
-    int frame_length = 0;  
+    int frame_length = 0, bcc_length = 1;   
 
-    // Stuffing bcc and data.  
+    // Stuffing bcc2 and data.  
     byte *BCC2 = (byte*)malloc(sizeof(byte)); 
     BCC2[0] = 0x00; 
-    int bcc_length = 1;  
 
     create_BCC2(data, BCC2, data_length);  
     byte_stuffing(data, &data_length);  
@@ -472,7 +418,7 @@ int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
 
     frame[frame_length-1] = FLAG;   
 
-    printf("Created frame i\n"); 
+    PRINT_NOTE("Created frame i"); 
     return frame_length; 
 }
 
