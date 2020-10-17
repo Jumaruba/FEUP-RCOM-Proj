@@ -5,7 +5,7 @@
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
 #define DEBUG  1            /* Set zero to don't show prints. */ 
-#define SHOW_OUTPUT 1       /* Show the information inside the state machines. */
+#define SHOW_OUTPUT 0       /* Show the information inside the state machines. */
 #define PRINT_ERR(format, ...) \
     do{ \
     if (DEBUG) \
@@ -40,8 +40,7 @@
 
 #define TRIES               3   /* Tries to read the receptor answers*/ //TODO: do I need this? 
 #define TIMEOUT             3   /* Time to wait for the receptor answers*/
-#define TRIES_SEND          3   /* Tries to send the message */ //TODO: do I need this?  
-#define TRIES_READ          3 
+#define TRIES_READ          3   // TODO: do I need this? 
 /* MACROS FOR THE PROTOCOL-------------------------------------------------------------------------------------------*/
 
 #define FLAG                0x7E

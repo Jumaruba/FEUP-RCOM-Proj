@@ -73,9 +73,11 @@ int llwrite(int fd, byte *data, int *data_length) {
         alarm(3); 
         if ((res = write(fd, frame, frame_length)) < 0) 
             PRINT_ERR("Not possible to write info frame. Sending again after timeout..."); 
+        else PRINT_SUC("Sent frame with S=%d", s_writer); 
         
         if ((res = read_frame_supervision(fd, &CMD, r_writer)) < 0) 
             PRINT_ERR("Not possible to read info frame. Sending again..."); 
+        else PRINT_SUC("Read CDM=%02x with R=%d", CMD, r_writer); 
 
         if (res >= 0){  
             alarm_off();
@@ -102,7 +104,7 @@ int llread(int fd, byte * data){
             PRINT_NOTE("Trying to read again."); 
             tries ++; 
             continue; 
-        } 
+        }else PRINT_SUC("Received CMD_S=%02x, S=%d", CMD_S(s_reader), s_reader); 
 
         tries = 0;          // Since it was possible to read, restart tries. 
         byte_destuffing(data, &data_length);   
@@ -154,15 +156,15 @@ int llclose(int fd, int flag, struct termios *oldtio){
                 PRINT_ERR("Failed in receive CMD_DISC. Sending CMD_DISC again...");   
                 continue; 
             } else {
-                PRINT_SUC("Emissor has read CMD_DISC.");  
+                PRINT_SUC("Read CMD_DISC.");  
                 alarm_off(); 
             }
-            
+
             // Here doesn't matter if it was sent or not. The emissor must turn off.   
             if (send_frame_nnsp(fd, A, CMD_UA) < 0 ){
-                PRINT_ERR("Emissor failed in sending CMD_UA. Turning off...");
+                PRINT_ERR("Failed in sending CMD_UA. Turning off...");
             }
-            else PRINT_SUC("Emissor has sent CMD_UA."); 
+            else PRINT_SUC("Sent CMD_UA."); 
             
         } 
         return closeDescriptor(fd, oldtio); 
@@ -170,19 +172,19 @@ int llclose(int fd, int flag, struct termios *oldtio){
     }else if (flag == RECEPTOR){    
         while(res < 0){
             if((res = read_frame_not_supervision(fd, CMD_DISC)) < 0){
-                PRINT_ERR("Receptor failed reading CMD_DISC"); 
+                PRINT_ERR("Failed reading CMD_DISC"); 
                 continue; 
-            } else PRINT_SUC("Receptor read CMD_DISC");  
+            } else PRINT_SUC("Read CMD_DISC");  
 
             if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
-                PRINT_ERR("Receptor failed sending CMD_DISC. Reading CMD_DISC again...");   
+                PRINT_ERR("Failed sending CMD_DISC. Reading CMD_DISC again...");   
                 continue; 
-            } else PRINT_SUC("Receptor sent CMD_DISC");   
+            } else PRINT_SUC("Sent CMD_DISC");   
 
             if ((res = read_frame_not_supervision(fd, CMD_UA))){
-                PRINT_ERR("Receptor not able to receive CMD_UA. Reading CMD_DISC again..."); 
+                PRINT_ERR("Not able to receive CMD_UA. Reading CMD_DISC again..."); 
                 continue; 
-            }else PRINT_SUC("Receptor received CMD_UA");
+            }else PRINT_SUC("Received CMD_UA");
 
             return closeDescriptor(fd, oldtio); 
         }

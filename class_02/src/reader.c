@@ -18,11 +18,11 @@ int main(int argc, char **argv) {
 
 
     int length = llread(fd, buffer);   
-    printf("\nTRAMA INFO: \n"); 
+    PRINTF("\nTRAMA INFO: \n"); 
     for (int i = 0 ; i< length; i++)
-        printf("%02x ", buffer[i]); 
+        PRINTF("%02x ", buffer[i]); 
 
-    printf("\n"); 
+    PRINTF("\n\n"); 
 
 
     llclose(fd, RECEPTOR, &oldtio); 
