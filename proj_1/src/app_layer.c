@@ -12,7 +12,12 @@ int create_dataPackage(char seqNum, char* info, int length, char* data){
     return 0; 
 } 
 
-int create_controlPackage(){
+int create_controlPackage(char C, char T, char * info, int length, char* data){
+
+    data[0] = C;  
+    data[1] = T; 
+    data[2] = length;  
     
-    
+    memcpy(&data[3], info, length);  
+
 }
