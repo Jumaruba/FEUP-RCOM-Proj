@@ -57,6 +57,16 @@
 #define CMD_RR(r)           (0x05 | ( r << 7 ))
 #define CMD_REJ(r)          (0x01 | ( r << 7 ))
 
+/* MACROS FOR THE APPLICATION --------------------------------------------------------------------------------------*/ 
+
+#define CTRL_DATA           1
+#define CTRL_START          2 
+#define CTRL_END            3 
+
+#define T_FILE_SIZE         0
+#define T_FILE_NAME         1
+#define T_MD5               2       //TODO: if we have time, create md5 
+
 /* OTHERS  ---------------------------------------------------------------------------------------------------------*/
 #define FALSE               0
 #define TRUE                1

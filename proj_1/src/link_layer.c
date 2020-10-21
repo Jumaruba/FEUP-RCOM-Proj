@@ -17,12 +17,7 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 
         fd = openDescriptor(port, oldtio, newtio); 
 
-        // Install the alarm. 
-        if (signal(SIGALRM, handle_alarm_timeout) == SIG_ERR){
-            PRINT_ERR("Not possible to install signal, SIG_ERR."); 
-            exit(-1); 
-        }
-        siginterrupt(SIGALRM, TRUE);
+
 
         // Establishment of the connection.  
         while (res != 0) { 
@@ -53,7 +48,6 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
     return fd;
 }
 
-// TODO: if not receive the correct REJ or RR, does it keep stuck in state machine? 
 int llwrite(int fd, byte *data, int *data_length) {
     static int s_writer = 0, r_writer = 1;  
     int res = -1 ;  
@@ -90,7 +84,6 @@ int llwrite(int fd, byte *data, int *data_length) {
     
 }
 
-// TODO: do i need a number of tries for the read? 
 int llread(int fd, byte * data){   
     int tries = 0, data_length = -1; 
     static int s_reader = 0, r_reader = 1;  // s and r arguments. 
@@ -131,10 +124,6 @@ int llread(int fd, byte * data){
     return -1;
 }
 
-//TODO: confirm with the professor. Case we don't the UA from the emissor, do we turn off?  
-//TODO: Case we do not receive the DISC from the emissor, do we turn off? -> doing NOT turning off
-//TODO: is there timeout here? I did it with.  
-//TODO: if timeout, we just exit the program or we init the llclose? I'm doing exit(-1)
 int llclose(int fd, int flag, struct termios *oldtio){ 
 
     int res = -1; 
@@ -553,10 +542,9 @@ handle_alarm_timeout()
         exit(-1);
     }
 
-}
+} 
 
-void alarm_off()
-{
-    numTransmissions = 0;
+void alarm_off() {
+    numTransmissions = 0; 
     alarm(0);
 }

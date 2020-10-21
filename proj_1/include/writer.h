@@ -12,5 +12,6 @@
 
 volatile int STOP = FALSE;
 
+void install_alarm(); 
 
 #endif
