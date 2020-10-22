@@ -4,7 +4,7 @@
 
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
-#define DEBUG  0            /* Set zero to don't show prints. */ 
+#define DEBUG  1            /* Set zero to don't show prints. */ 
 #define SHOW_OUTPUT 0       /* Show the information inside the state machines. */
 #define PRINT_ERR(format, ...) \
     do{ \

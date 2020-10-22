@@ -11,12 +11,28 @@ int main(int argc, char **argv) {
     int contentSize = 10,  frameLength = 0, actual_contentSize = 0; 
     u_int8_t fileread = 1; 
     
+
+    // ALLOCATING VARIABLES 
     char * content[contentSize];
     byte* pack[MAX_SIZE_ALLOC];  
     byte* frame_ = (byte*)malloc(sizeof(byte)*MAX_SIZE_ALLOC);
     
+    // CHECK USAGE 
+    char firstLetters[9];
+    if (argc < 3){
+        PRINT_ERR("Usage: /dev/ttySX path_file!");  
+        exit(-1); 
+    }else{
+        strncpy(firstLetters, argv[1], 9); 
+        if (strcmp(firstLetters, "/dev/ttyS") != 0){
+            PRINT_ERR("Usage: /dev/ttySX path_file");
+            exit(-1);
+        }
+    }
+
+
     // OPEN FILE  
-    byte * namefile = "testFile.txt";       // TODO: delete this later. 
+    byte * namefile = argv[2]; 
     open_file(namefile);
 
 
@@ -78,11 +94,12 @@ void install_alarm() {
     siginterrupt(SIGALRM, TRUE);
 }
 
-int open_file( byte* nameFile){
+void open_file( byte* nameFile){
     if (( fp = fopen(nameFile, "rb")) == NULL){
-        PRINT_ERR("Not possible to open file"); 
-        return -1; 
+        PRINT_ERR("%s", stderr); 
+        exit(-1);
     } 
+    
 }
 
 size_t get_fileSize(){

@@ -13,6 +13,8 @@ int main(int argc, char ** argv){
     int packSize = 10; 
     int actual_contentSize; 
     int continue_reading; 
+
+    
     if (( fp = fopen("testFile.txt", "rb")) < 0){
         PRINT_ERR("Not possible to open file"); 
         return -1; 
