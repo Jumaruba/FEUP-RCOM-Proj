@@ -50,8 +50,7 @@ int llwrite(int fd, byte *data, int *data_length) {
     int res = -1 ;  
     byte CMD;  
     
-    byte * frame  = (byte*) malloc(MAX_SIZE_ARRAY*sizeof(byte));    // Alloc max size.  
-
+    byte * frame  = (byte*) malloc(MAX_SIZE_ALLOC*sizeof(byte));    // Alloc max size.  
     if (*data_length < 0) {
         PRINT_ERR("Length must be positive, actual: %d", *data_length);
         return -1;
@@ -59,7 +58,7 @@ int llwrite(int fd, byte *data, int *data_length) {
 
     // Creating the info to send
     int frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
-
+    
     while(res != 0){
         alarm(3); 
         if ((res = write(fd, frame, frame_length)) < 0) 
@@ -87,7 +86,6 @@ int llread(int fd, byte * data){
     byte  check_BCC2; 
 
     while(tries < TRIES_READ){  
-        PRINT_NOTE("s_reader = %d", CMD_S(s_reader));
         if ((data_length = read_frame_i(fd, data, CMD_S(s_reader))) < 0){
             PRINT_ERR("Not possible to read information frame. Sending CMD_REJ..."); 
             sleep(DELAY_US); 
@@ -451,7 +449,7 @@ int byte_stuffing(byte * frame, int* frame_length)
     } 
 
 
-    frame = realloc(frame, new_frame_length); 
+    //frame = realloc(frame, new_frame_length); 
     * frame_length  = new_frame_length;
 
     memcpy(frame, new_frame, new_frame_length); 

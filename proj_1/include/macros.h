@@ -4,24 +4,24 @@
 
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
-#define DEBUG  1            /* Set zero to don't show prints. */ 
-#define SHOW_OUTPUT 1       /* Show the information inside the state machines. */
+#define DEBUG  0            /* Set zero to don't show prints. */ 
+#define SHOW_OUTPUT 0       /* Show the information inside the state machines. */
 #define PRINT_ERR(format, ...) \
     do{ \
     if (DEBUG) \
-    printf("\033[31;1mERR\033[0m: %s:%d\t::\033[31;1m" format "\033[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
+    printf("\033[31;1mERR\033[0m: %s:%d\t\t::\033[31;1m" format "\033[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
     }while(0)
     
 #define PRINT_SUC(format, ...) \
     do{ \
     if (DEBUG) \
-    printf("\033[32;1mSUC\033[0m: %s:%d\t::\033[32;1m" format "\033[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
+    printf("\033[32;1mSUC\033[0m: %s:%d\t\t::\033[32;1m" format "\033[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
     }while(0) 
 
 #define PRINT_NOTE(format, ...) \
     do{ \
     if (DEBUG) \
-    printf("\e[1;34mNOTE\e[0m: %s:%d\t::\e[1;34m" format "\e[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
+    printf("\e[1;34mNOTE\e[0m: %s:%d\t\t::\e[1;34m" format "\e[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
     }while(0)
 
 #define PRINTF(format, ...) \
@@ -72,6 +72,5 @@
 #define TRUE                1
 #define SWITCH(s)           !s
 #define BIT(n)              (1 << n)
-#define MAX_SIZE_ARRAY      65535 
-#define MAX_SIZE            255     /* Max size of the package */ 
+#define MAX_SIZE_ALLOC      255*4     /* Max size of the package */ 
 #define DELAY_US            0.2

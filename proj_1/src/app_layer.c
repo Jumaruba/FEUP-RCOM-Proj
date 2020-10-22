@@ -2,24 +2,29 @@
 
 
 
-int get_infoSlice(int index, byte* data, int length, int packSize, byte* pack){
+int get_infoSlice(int index, byte* data, int length, int packSize, byte* pack){ 
+
     if (length < 0){
         PRINT_ERR("Length must be positive"); 
         return -1; 
     }  
 
     int posInit = packSize* index;  
+
     if (posInit > length){
         PRINT_NOTE("Initial position must be less then the data length");  
         return -1; 
     }
-    int posEnd  = packSize* (index+1) > length? length: packSize* (index+1);  
-    int actualPackSize = posEnd - posInit; 
 
+    int posEnd  = packSize* (index+1) > length? length: packSize* (index+1);   
+    int actualPackSize = posEnd - posInit;   
+ 
+    
     if (memcpy(pack, &data[posInit], actualPackSize) == NULL){
         PRINT_ERR("Error creating package"); 
         return -1; 
-    }
+    } 
+
 
     return actualPackSize; 
 }
@@ -29,13 +34,12 @@ int create_dataPackage(int seqNum, byte* info, int length, byte* frame){
     frame[0] = CTRL_DATA; 
     frame[1] = seqNum % 256;  
     frame[2] = length / 256; // L2
-    frame[3] = length % 256;
-
+    frame[3] = length % 256; 
+    
     if (memcpy(&frame[4], info, length) == NULL){
         PRINT_ERR("Error while copying package."); 
         return -1; 
-    }
-
+    } 
     PRINT_SUC("Created data package");
     return 0; 
 }  
@@ -88,7 +92,6 @@ int read_controlPackage(byte* pack, byte* nameFile, int *fileSize, int packSize)
         if (T_FILE_NAME == pack[i]){
             i++; 
             int sizeT = pack[i++];  
-            printf("sizeoffile %d\n", sizeT); 
             if (memcpy(nameFile, &pack[i], sizeT) == NULL){
                 PRINT_ERR("Not possible to parse file name"); 
                 return -1; 
