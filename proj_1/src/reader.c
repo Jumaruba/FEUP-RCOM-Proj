@@ -14,10 +14,12 @@ int main(int argc, char **argv) {
     byte *package = (byte *) malloc(MAX_SIZE_ALLOC*sizeof(byte));  
     byte* info = (byte*)malloc(sizeof(byte)*MAX_SIZE_ALLOC);   
     FILE *fp;
+    int length; 
 
     int filesize;  
     package[0] = 4;  
 
+        
     u_int8_t received_start = FALSE; 
 
     // CHECK USAGE 
@@ -26,6 +28,7 @@ int main(int argc, char **argv) {
         strcpy(outputfile, argv[2]);
         strncpy(firstLetters, argv[1], 9); 
         if (strcmp(firstLetters, "/dev/ttyS") != 0){
+            printf("%s -> %d\n", firstLetters,strcmp(firstLetters, "/dev/ttyS") );
             PRINT_ERR("Usage: /dev/ttySX <path_file>");
             exit(-1);
         }
@@ -43,11 +46,14 @@ int main(int argc, char **argv) {
 
     // SET CHANNEL
     PRINT_NOTE("LLOPEN CALL"); 
-    fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio);  
+    if( (fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio)) == -1 ) {
+        PRINT_ERR("Could not open descriptor on port %s.", argv[1]); 
+        exit(-1);
+    } 
 
     //RECEIVE START PACKAGE
     while(received_start != TRUE){
-        int length = llread(fd, package);    
+        length = llread(fd, package);    
         if (package[0] == CTRL_START){
             PRINT_SUC("Received package start");  
             read_controlPackage(package, namefile, &filesize, length);  
@@ -55,31 +61,52 @@ int main(int argc, char **argv) {
         } 
     } 
 
-    fp = fopen(outputfile, "w");
+    if( (fp = fopen(outputfile, "w")) == NULL ) {
+        PRINT_ERR("%s", stderr); 
+        exit(-1);
+    }
 
     //READ DATA 
-    while(TRUE){ 
-        llread(fd,package);  
+    while(TRUE){   
+        if ( (length = llread(fd,package)) < 0){
+            PRINT_ERR("Could not read file descriptor.");
+        }
+
         if (package[0] == CTRL_DATA){
             read_dataPackage(&seqNum, info, package);
             fputs(info, fp); 
         }
 
         memset(info, 0, strlen(info));
-        if (package[0] == CTRL_END) break; 
+        if (package[0] == CTRL_END){
+            char end_outputfile[MAX_SIZE_ALLOC]; 
+            int end_filesize; 
+            read_controlPackage(package, end_outputfile, &end_filesize, length); 
+            if (strcmp(end_outputfile, outputfile) != 0)
+                PRINT_ERR("End file name: %s :-: Begin file name: %s", end_outputfile, outputfile); 
+            if (filesize != end_filesize)
+                PRINT_ERR("End size: %d :-: Begin size: %d", end_filesize, filesize);
+            
+            break;
+        }  
 
 
     }
 
-
-    free(info); 
-    free(package);  
-
     printf("NAMEFILE: %s\n", namefile); 
     printf("FILESIZE: %d\n", filesize);  
 
+    free(info); 
+    free(package);  
+    free(namefile);
+    free(outputfile);
 
     PRINT_NOTE("LLCLOSE CALL");
     llclose(fd, RECEPTOR, &oldtio); 
+
+    if( (fclose(fp)) == EOF ) {
+        PRINT_ERR("%s", stderr); 
+        exit(-1);
+    }
 }
 
