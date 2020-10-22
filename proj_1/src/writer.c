@@ -8,16 +8,16 @@ int seqNum = 0;
 
 int main(int argc, char **argv) { 
     FILE* fp;  
-    int contentSize = 10,  frameLength = 0; 
+    int contentSize = 10,  frameLength = 0, actual_contentSize = 0; 
     u_int8_t fileread = 1; 
-
+    
     char * content[contentSize];
     byte* pack[MAX_SIZE_ALLOC];  
     byte* frame_ = (byte*)malloc(sizeof(byte)*MAX_SIZE_ALLOC);
     
     // OPEN FILE  
     byte * namefile = "testFile.txt";       // TODO: delete this later. 
-    if (( fp = fopen(namefile, "r")) == NULL){
+    if (( fp = fopen(namefile, "rb")) == NULL){
         PRINT_ERR("Not possible to open file"); 
         return -1; 
     } 
@@ -41,33 +41,30 @@ int main(int argc, char **argv) {
     int size = create_controlPackage(CTRL_START, namefile, fileSize, pack); 
     llwrite(fd, pack, &size);   
     
-    do{
-        if (fgets(content, contentSize, fp) == NULL) {
-            fileread = 0; 
+    while(TRUE){
+        if ((actual_contentSize = fread(content, 1, contentSize, fp)) <= 0) { 
+            break; 
         }
-        printf("content size: %d\n", sizeof(content));
 
-        /*if ((actual_PackSize = get_infoSlice(seqNum, content, fileSize, contentSize, pack)) < 0){  
-            PRINT_SUC("End of sending loop"); 
-            break;
-        }   */
 
-        if (create_dataPackage(seqNum, content, contentSize, frame_) <0){
+        if (create_dataPackage(seqNum, content, actual_contentSize, frame_) <0){
             PRINT_ERR("create_dataPackage error"); 
             return -1; 
         }
+
         
-        frameLength = contentSize + 4; 
+        frameLength = actual_contentSize + 4; 
 
         if (llwrite(fd, frame_, &frameLength) < 0){
             PRINT_ERR("LLWRITE error"); 
             return -1; 
         }
 
-        fseek(fp, SEEK_CUR, contentSize); 
-        seqNum++;   
-    } while(fileread);
+        seqNum++;    
+        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize; 
+    }
         
+    
     //CONTROL PACKAGE END 
     size = create_controlPackage(CTRL_END, namefile, strlen(content), pack); 
     llwrite(fd, pack, &size); 

@@ -41,10 +41,10 @@ int main(int argc, char **argv) {
         if (package[0] == CTRL_DATA){
             read_dataPackage(&seqNum, info, package);
             printf("%s\n", info); 
-            printf("content size: %d\n", strlen(info));
 
         }
 
+        memset(info, 0, strlen(info));
         if (package[0] == CTRL_END) break; 
 
 
