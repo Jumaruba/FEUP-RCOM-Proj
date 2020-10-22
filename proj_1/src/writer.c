@@ -4,28 +4,43 @@
 
 struct termios oldtio, newtio;
 int fd;
+int numTransmissions = 0;  
+int seqNum = 0; 
 
 int main(int argc, char **argv)
 {
     int res;
 
-    // SET CHANNEL
-    install_alarm();
-    fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio);
+   // SET CHANNEL 
+   install_alarm();
+   fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio);   
 
-    byte *data = (byte *)malloc(sizeof(byte) * 5);
+    
+    //create control package 
+    //send control package 
 
-    data[0] = 0x01;
-    data[1] = FLAG;
-    data[2] = ESC;
-    data[3] = 0xA0;
-    data[4] = 0xFF;
 
-    int length = 5;
-    llwrite(fd, data, &length);
-    // CLOSE
+   while(TRUE){ 
+       //get package 
+       //send package 
+       //check index 
+   }
 
-    llclose(fd, TRANSMITTER, &oldtio);
+   //send llclose 
+
+   byte *data = (byte *)malloc(sizeof(byte) * 5); 
+   data[0] = 0x01;
+   data[1] = FLAG;
+   data[2] = ESC;
+   data[3] = 0xA0;
+   data[4] = 0xFF; 
+   int length = 5;
+   llwrite(fd, data, &length); 
+
+   // CLOSE
+   llclose(fd, TRANSMITTER, &oldtio); 
+
+
 }
 
 void install_alarm() {

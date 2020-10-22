@@ -2,5 +2,5 @@
 #include <stdlib.h>
 
 
-void print_hex(char *s); 
+void print_hex(char *s, int length); 
 

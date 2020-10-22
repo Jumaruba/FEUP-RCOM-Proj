@@ -1,6 +1,5 @@
 #include "../include/link_layer.h"
 
-int numTransmissions = 0;
 
 
 int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
@@ -16,8 +15,6 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
     if (TRANSMITTER == flag) { 
 
         fd = openDescriptor(port, oldtio, newtio); 
-
-
 
         // Establishment of the connection.  
         while (res != 0) { 

@@ -5,7 +5,7 @@
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
 #define DEBUG  1            /* Set zero to don't show prints. */ 
-#define SHOW_OUTPUT 0       /* Show the information inside the state machines. */
+#define SHOW_OUTPUT 1       /* Show the information inside the state machines. */
 #define PRINT_ERR(format, ...) \
     do{ \
     if (DEBUG) \
@@ -72,6 +72,6 @@
 #define TRUE                1
 #define SWITCH(s)           !s
 #define BIT(n)              (1 << n)
-#define MAX_SIZE_ARRAY      16383   // The actual max size is 2^16-1, but we're using less bytes to avoid overflow
+#define MAX_SIZE_ARRAY      65535 
 #define MAX_SIZE            255     /* Max size of the package */ 
 #define DELAY_US            0.2
