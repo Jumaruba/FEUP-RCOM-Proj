@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
         
     
     //CONTROL PACKAGE END 
-    size = create_controlPackage(CTRL_END, namefile, strlen(content), pack); 
+    size = create_controlPackage(CTRL_END, namefile, fileSize, pack); 
     llwrite(fd, pack, &size); 
 
 

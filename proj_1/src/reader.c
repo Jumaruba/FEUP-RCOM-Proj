@@ -79,11 +79,11 @@ int main(int argc, char **argv) {
 
         memset(info, 0, strlen(info));
         if (package[0] == CTRL_END){
-            char end_outputfile[MAX_SIZE_ALLOC]; 
+            char *end_outputfile[MAX_SIZE_ALLOC]; 
             int end_filesize; 
             read_controlPackage(package, end_outputfile, &end_filesize, length); 
-            if (strcmp(end_outputfile, outputfile) != 0)
-                PRINT_ERR("End file name: %s :-: Begin file name: %s", end_outputfile, outputfile); 
+            if (strcmp(end_outputfile, namefile) != 0)
+                PRINT_ERR("End file name: %s :-: Begin file name: %s", end_outputfile, namefile); 
             if (filesize != end_filesize)
                 PRINT_ERR("End size: %d :-: Begin size: %d", end_filesize, filesize);
             
