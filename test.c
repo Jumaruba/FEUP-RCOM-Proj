@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 int numTransmission = 0; 
-int get_pack(int index, byte* data, int length, int packSize, char* pack){
+int numTransmission_write = 0; 
+int get_infoIndex(int index, byte* data, int length, int packSize, char* pack){
     if (length < 0){
         PRINT_ERR("Length must be positive"); 
         return -1; 
@@ -39,9 +40,21 @@ int create_dataPackage(int seqNum, byte* info, int length, byte* frame){
         return -1; 
     }
 
-    PRINT_SUC("Created data package");
     return 0; 
 } 
+
+int read_dataPackage(int* seqNum, byte* info, byte* pack){
+    
+    *seqNum = pack[1]; 
+    int infoSize = pack[2]*256 + pack[3]; 
+
+    if (memcpy(info, &pack[4], infoSize) == NULL){
+        PRINT_ERR("Error parsing info."); 
+        return -1; 
+    }
+
+    return infoSize; 
+}
 
 int main(int argc, char ** argv){
 
@@ -54,7 +67,7 @@ int main(int argc, char ** argv){
     while(TRUE){
 
         char * pack = (char*)malloc(sizeof(char)*packSize);  
-        if ((actual_PackSize = get_pack(numTransmission, content, size, packSize, pack)) < 0){  
+        if ((actual_PackSize = get_infoIndex(numTransmission, content, size, packSize, pack)) < 0){  
             PRINT_SUC("End of sending loop"); 
             break;
         }  
@@ -62,17 +75,11 @@ int main(int argc, char ** argv){
         char * frame = (char*)malloc(sizeof(char)*(actual_PackSize+4)); 
         int length = create_dataPackage(numTransmission, pack, actual_PackSize,frame);  
         
-        
-        for (int i = 0 ; i < actual_PackSize +4; i++)
-            printf("%02x ", frame[i]); 
-        printf("\n"); 
-        for (int i = 0 ; i < actual_PackSize+4; i++){
-            if (i <4) printf("   "); 
-            else printf("%c ", pack[i-4]);
-        }
-            
-        printf("\n");
+        char * info = (char *)malloc(sizeof(char)*MAX_SIZE_ARRAY); 
+        int packSize_read = read_dataPackage(&numTransmission_write, info, frame); 
 
+        printf("%s", info);      
+        
 
         numTransmission ++; 
         

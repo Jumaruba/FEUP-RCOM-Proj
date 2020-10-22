@@ -1,6 +1,6 @@
 #include "../include/link_layer.h"
 
-
+int numTransmissions = 0; 
 
 int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 {

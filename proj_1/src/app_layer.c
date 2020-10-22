@@ -2,7 +2,7 @@
 
 
 
-int get_pack(int index, byte* data, int length, int packSize, char* pack){
+int get_infoSlice(int index, byte* data, int length, int packSize, byte* pack){
     if (length < 0){
         PRINT_ERR("Length must be positive"); 
         return -1; 
@@ -10,7 +10,7 @@ int get_pack(int index, byte* data, int length, int packSize, char* pack){
 
     int posInit = packSize* index;  
     if (posInit > length){
-        PRINT_ERR("Initial position must be less then the data length");  
+        PRINT_NOTE("Initial position must be less then the data length");  
         return -1; 
     }
     int posEnd  = packSize* (index+1) > length? length: packSize* (index+1);  
@@ -24,22 +24,36 @@ int get_pack(int index, byte* data, int length, int packSize, char* pack){
     return actualPackSize; 
 }
 
-int create_dataPackage(int seqNum, byte* info, int* length, byte* pack){  
+int create_dataPackage(int seqNum, byte* info, int length, byte* frame){  
 
-    pack[0] = CTRL_DATA; 
-    pack[1] = seqNum % 256;  
-    pack[2] = *length / 256; // L2
-    pack[3] = *length % 256;
+    frame[0] = CTRL_DATA; 
+    frame[1] = seqNum % 256;  
+    frame[2] = length / 256; // L2
+    frame[3] = length % 256;
 
-    if (memcpy(&pack[4], info, *length) == NULL)
+    if (memcpy(&frame[4], info, length) == NULL){
         PRINT_ERR("Error while copying package."); 
+        return -1; 
+    }
 
-    *length += 4;  
     PRINT_SUC("Created data package");
     return 0; 
-} 
+}  
 
-int create_controlPackage(char C, byte* nameFile, int length, byte* pack){
+int read_dataPackage(int* seqNum, byte* info, byte* pack){
+    
+    *seqNum = pack[1]; 
+    int infoSize = pack[2]*256 + pack[3]; 
+
+    if (memcpy(info, &pack[4], infoSize) == NULL){
+        PRINT_ERR("Error parsing info."); 
+        return -1; 
+    }
+
+    return infoSize; 
+}
+
+int create_controlPackage(byte C, byte* nameFile, int length, byte* pack){
     int size_nameFile = strlen(nameFile), curr_pos = 0;  
 
     pack[0]= C;  
@@ -67,7 +81,7 @@ int create_controlPackage(char C, byte* nameFile, int length, byte* pack){
     return curr_pos + strlen(length_string) + 2; 
 } 
 
-int read_controlPackage(char* pack, char* nameFile, int *fileSize, int packSize){
+int read_controlPackage(byte* pack, byte* nameFile, int *fileSize, int packSize){
     char * fileSize_string = (char*)malloc(sizeof(int));  
 
     for (int i = 0 ; i < packSize; i++){ 
@@ -97,3 +111,4 @@ int read_controlPackage(char* pack, char* nameFile, int *fileSize, int packSize)
     PRINT_SUC("Read control package."); 
     return 0; 
 }
+

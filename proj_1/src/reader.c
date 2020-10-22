@@ -13,9 +13,12 @@ int main(int argc, char **argv) {
 
 
     int length = llread(fd, buffer);   
-    PRINTF("\nTRAMA INFO: \n"); 
-    for (int i = 0 ; i< length; i++)
-        PRINTF("%02x ", buffer[i]); 
+    PRINTF("\nTRAMA INFO: \n");   
+    char * namefile = (char*)malloc(sizeof(char)*MAX_SIZE_ARRAY);  
+    int filesize; 
+    read_controlPackage(buffer, namefile, &filesize, length); 
+    PRINTF("NAMEFILE: %s\n", namefile); 
+    PRINTF("FILESIZE: %d\n", filesize); 
 
     PRINTF("\n\n"); 
 
