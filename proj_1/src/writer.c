@@ -97,7 +97,7 @@ void install_alarm() {
 
 void open_file( byte* nameFile){
     if (( fp = fopen(nameFile, "rb")) == NULL){
-        PRINT_ERR("%s", stderr); 
+        PRINT_ERR("Inexistent %s", nameFile); 
         exit(-1);
     } 
     
