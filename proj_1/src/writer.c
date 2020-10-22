@@ -4,10 +4,10 @@
 
 struct termios oldtio, newtio;
 int fd;
+FILE* fp; 
 int seqNum = 0; 
 
 int main(int argc, char **argv) { 
-    FILE* fp;  
     int contentSize = 10,  frameLength = 0, actual_contentSize = 0; 
     u_int8_t fileread = 1; 
     
@@ -17,21 +17,14 @@ int main(int argc, char **argv) {
     
     // OPEN FILE  
     byte * namefile = "testFile.txt";       // TODO: delete this later. 
-    if (( fp = fopen(namefile, "rb")) == NULL){
-        PRINT_ERR("Not possible to open file"); 
-        return -1; 
-    } 
+    open_file(namefile);
 
-    // Get size of file. 
-    fseek(fp, 0L, SEEK_END); 
-    int fileSize = ftell(fp); 
 
-    // Pointer back to the beggining. 
-    fseek(fp, 0L, SEEK_SET); 
-
+    int fileSize = get_fileSize();
 
    // SET CHANNEL 
    install_alarm();
+
    fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio);   
 
 
@@ -83,4 +76,29 @@ void install_alarm() {
         llclose(fd, CMD_DISC, &oldtio);
     }
     siginterrupt(SIGALRM, TRUE);
+}
+
+int open_file( byte* nameFile){
+    if (( fp = fopen(nameFile, "rb")) == NULL){
+        PRINT_ERR("Not possible to open file"); 
+        return -1; 
+    } 
+}
+
+size_t get_fileSize(){
+    // Get size of file. 
+    if (fseek(fp, 0L, SEEK_END) != 0){
+        PRINT_ERR("%s", stderr); 
+        exit(-1);
+    }
+
+    int fileSize = ftell(fp); 
+
+    // Pointer back to the beggining. 
+    if (fseek(fp, 0L, SEEK_SET) != 0){
+        PRINT_ERR("%s", stderr); 
+        exit(-1);
+    }
+
+    return fileSize; 
 }
