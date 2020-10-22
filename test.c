@@ -4,78 +4,79 @@
 #include <string.h>
 #include <stdlib.h>
 
-int create_controlPackage(char C, byte* nameFile, int length, byte* pack){
-    int size_nameFile = strlen(nameFile), curr_pos = 0;  
+int numTransmission = 0; 
+int get_pack(int index, byte* data, int length, int packSize, char* pack){
+    if (length < 0){
+        PRINT_ERR("Length must be positive"); 
+        return -1; 
+    }  
 
-    pack[0]= C;  
-    pack[1] = T_FILE_NAME; 
-    pack[2]= strlen(nameFile); 
-
-    if (memcpy(&pack[3] , nameFile, size_nameFile) == NULL){
-        PRINT_ERR("Not possible to copy file name"); 
+    int posInit = packSize* index;  
+    if (posInit > length){
+        PRINT_NOTE("Initial position must be less then the data length");  
         return -1; 
     }
-    
-    curr_pos = 3 + size_nameFile;
-    char * length_string = (char*)malloc(sizeof(int)); 
-    sprintf(length_string, "%d", length);                        // Int to string. 
+    int posEnd  = packSize* (index+1) > length? length: packSize* (index+1);  
+    int actualPackSize = posEnd - posInit; 
 
-    pack[curr_pos] = T_FILE_SIZE;   
-    pack[curr_pos+1] = strlen(length_string);  
-
-    if (memcpy(&pack[curr_pos+2], length_string, strlen(length_string)) == NULL){
-        PRINT_ERR("Not possible to copy size of file"); 
+    if (memcpy(pack, &data[posInit], actualPackSize) == NULL){
+        PRINT_ERR("Error creating package"); 
         return -1; 
     }
 
-    PRINT_SUC("Created control package.");  
-    return curr_pos + strlen(length_string) + 2; 
+    return actualPackSize; 
+}
+
+int create_dataPackage(int seqNum, byte* info, int length, byte* frame){  
+
+    frame[0] = CTRL_DATA; 
+    frame[1] = seqNum % 256;  
+    frame[2] = length / 256; // L2
+    frame[3] = length % 256;
+
+    if (memcpy(&frame[4], info, length) == NULL){
+        PRINT_ERR("Error while copying package."); 
+        return -1; 
+    }
+
+    PRINT_SUC("Created data package");
+    return 0; 
 } 
 
-int read_controlPackage(char* pack, char* nameFile, int *fileSize, int packSize){
-    char * fileSize_string = (char*)malloc(sizeof(int));  
-
-    for (int i = 0 ; i < packSize; i++){ 
-        if (T_FILE_NAME == pack[i]){
-            i++; 
-            int sizeT = pack[i++];  
-            printf("sizeoffile %d\n", sizeT); 
-            if (memcpy(nameFile, &pack[i], sizeT) == NULL){
-                PRINT_ERR("Not possible to parse file name"); 
-                return -1; 
-            }
-            i+= sizeT-1; 
-        }
-        else if (T_FILE_SIZE == pack[i]){ 
-            i++;  
-            int sizeT = pack[i++]; 
-            if (memcpy(fileSize_string, &pack[i], sizeT) == NULL){
-                PRINT_ERR("Not possible to parse size of file"); 
-                return -1; 
-            } 
-
-            sscanf(fileSize_string, "%d", fileSize);        // Parse the size
-            i+= sizeT; 
-        }
-
-    } 
-    PRINT_SUC("Read control package."); 
-    return 0; 
-}
-    
 int main(int argc, char ** argv){
 
-    char *nameFile = "testFile.txt"; 
-    char * pack = (char*)malloc(sizeof(char)*MAX_SIZE_ARRAY); 
-    int length = create_controlPackage(CTRL_START, nameFile, strlen(nameFile), pack); 
-    for (int i = 0 ; i < length; i++) printf("%02x\n", pack[i]);  
-    char *name_file = (char*)malloc(sizeof(char)*MAX_SIZE_ARRAY); 
-    int fileSize; 
-    read_controlPackage(pack, name_file, &fileSize, length ); 
+    char * content = "juliane e guilherme não gostam de fazer o trabalho de RCOM porque  é extremamente chato.\n"; 
     
-    printf("%s\n", name_file); 
-    printf("%d\n", fileSize);
-    free(name_file);
-    free(pack);
+    int size = strlen(content); 
+    int packSize = 4; 
+    int actual_PackSize = 0; 
+    char * finalContent = (char*)malloc(sizeof(char)*MAX_SIZE_ARRAY); 
+    while(TRUE){
+
+        char * pack = (char*)malloc(sizeof(char)*packSize);  
+        if ((actual_PackSize = get_pack(numTransmission, content, size, packSize, pack)) < 0){  
+            PRINT_SUC("End of sending loop"); 
+            break;
+        }  
+
+        char * frame = (char*)malloc(sizeof(char)*(actual_PackSize+4)); 
+        int length = create_dataPackage(numTransmission, pack, actual_PackSize,frame);  
+        
+        
+        for (int i = 0 ; i < actual_PackSize +4; i++)
+            printf("%02x ", frame[i]); 
+        printf("\n"); 
+        for (int i = 0 ; i < actual_PackSize+4; i++){
+            if (i <4) printf("   "); 
+            else printf("%c ", pack[i-4]);
+        }
+            
+        printf("\n");
+
+
+        numTransmission ++; 
+        
+    }
+   
     
 }
