@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
         strcpy(outputfile, argv[2]);
         strncpy(firstLetters, argv[1], 9); 
         if (strcmp(firstLetters, "/dev/ttyS") != 0){
-            printf("%s -> %d\n", firstLetters,strcmp(firstLetters, "/dev/ttyS") );
             PRINT_ERR("Usage: /dev/ttySX <path_file>");
             exit(-1);
         }
@@ -61,7 +60,7 @@ int main(int argc, char **argv) {
         } 
     } 
 
-    if( (fp = fopen(outputfile, "w")) == NULL ) {
+    if( (fp = fopen(outputfile, "wb")) == NULL ) {
         PRINT_ERR("%s", stderr); 
         exit(-1);
     }
@@ -73,8 +72,8 @@ int main(int argc, char **argv) {
         }
 
         if (package[0] == CTRL_DATA){
-            read_dataPackage(&seqNum, info, package);
-            fputs(info, fp); 
+            length = read_dataPackage(&seqNum, info, package);
+            fwrite(info, sizeof(byte), length, fp); 
         }
 
         memset(info, 0, strlen(info));
