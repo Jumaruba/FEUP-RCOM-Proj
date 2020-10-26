@@ -17,10 +17,11 @@ int llopen(byte *port, int flag)
     }
 
     if (TRANSMITTER == flag) { 
-
+        
+        // Set the file descriptor. 
         fd = openDescriptor(port, &oldtio_transmitter, &newtio); 
         fd_transmitter = fd;  
-        
+
         // Establishment of the connection.  
         while (res != 0) { 
             alarm(3);
@@ -37,7 +38,9 @@ int llopen(byte *port, int flag)
 
     else if (RECEPTOR == flag)
     {
-        fd = openDescriptor(port, &oldtio_receiver, &newtio);
+        //Set the file descriptor. 
+        fd = openDescriptor(port, &oldtio_receiver, &newtio); 
+
         while(res < 0){
             // Establishment of the connection. 
             read_frame_not_supervision(fd, CMD_SET);
@@ -51,32 +54,34 @@ int llopen(byte *port, int flag)
 }
 
 int llwrite(int fd, byte *data, int *data_length) {
-    static int s_writer = 0, r_writer = 1;  
+    static int s_writer = 0; 
     int res = -1 ;  
     byte CMD;  
     
     byte * frame  = (byte*) malloc(MAX_SIZE_ALLOC*sizeof(byte));    // Alloc max size.  
+
+    // Check input function errors.
     if (*data_length < 0) {
         PRINT_ERR("Length must be positive, actual: %d", *data_length);
         return -1;
     }
 
-    // Creating the info to send
+    // Creating the info to send.
     int frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
     
+    // Send info. 
     while(res != 0){
         alarm(3); 
         if ((res = write(fd, frame, frame_length)) < 0) 
             PRINT_ERR("Not possible to write info frame. Sending again after timeout..."); 
         else PRINT_SUC("Sent frame with S=%d", s_writer); 
         
-        if ((res = read_frame_supervision(fd, &CMD, r_writer)) < 0) 
+        if ((res = read_frame_supervision(fd, &CMD, !s_writer)) < 0) 
             PRINT_ERR("Not possible to read info frame. Sending again..."); 
-        else PRINT_SUC("Read CDM=%02x with R=%d", CMD, r_writer); 
+        else PRINT_SUC("Read CDM=%02x with R=%d", CMD, !s_writer); 
 
         if (res >= 0){  
             alarm_off();
-            r_writer = SWITCH(r_writer); 
             s_writer = SWITCH(s_writer); 
             return 0; 
         }
