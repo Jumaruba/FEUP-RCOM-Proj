@@ -103,6 +103,7 @@ void open_file( byte* nameFile){
     
 }
 
+
 size_t get_fileSize(){
     // Get size of file. 
     if (fseek(fp, 0L, SEEK_END) != 0){

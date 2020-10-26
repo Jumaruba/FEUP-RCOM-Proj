@@ -55,7 +55,7 @@ int read_frame_not_supervision(int fd, byte CMD);
 
 int send_frame_nnsp(int fd, byte ADDR, byte CMD);  
 
-int read_frame_i(int fd, byte *buffer, byte CMD); 
+int read_frame_i(int fd, byte *buffer, byte *CMD); 
 
 /* Create information frame */ 
 

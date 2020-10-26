@@ -81,36 +81,47 @@ int llwrite(int fd, byte *data, int *data_length) {
 }
 
 int llread(int fd, byte * data){   
-    int tries = 0, data_length = -1; 
-    static int s_reader = 0, r_reader = 1;  // s and r arguments. 
-    byte  check_BCC2; 
+    int data_length = -1; 
+    static int s_reader = 0, curr_s = 0; 
+    byte  check_BCC2, CMD; 
 
-    while(tries < TRIES_READ){  
-        if ((data_length = read_frame_i(fd, data, CMD_S(s_reader))) < 0){
+    // Will not leave the loop until has a new message. 
+    while(TRUE){  
+        if ((data_length = read_frame_i(fd, data, &CMD)) < 0){
             PRINT_ERR("Not possible to read information frame. Sending CMD_REJ..."); 
             sleep(DELAY_US); 
             PRINT_NOTE("Trying to read again."); 
-            tries ++; 
             continue; 
-        }else PRINT_SUC("Received CMD_S=%02x, S=%d", CMD_S(s_reader), s_reader); 
+        }else PRINT_SUC("Received CMD_S=%02x, S=%d", CMD_S(s_reader), s_reader);  
 
-        tries = 0;          // Since it was possible to read, restart tries. 
+        // Get the s received. 
+        if (CMD == CMD_S(0)) curr_s = 0; 
+        else if (CMD == CMD_S(1)) curr_s = 1; 
+
         byte_destuffing(data, &data_length);   
 
         // Check the bcc2.  
         check_BCC2 = 0x00; 
         create_BCC2(data, &check_BCC2, data_length-1);  
 
+        // If wrong bcc2 send CMD REJ. 
         if (check_BCC2 != data[data_length-1]) { 
             PRINT_ERR("Wrong bcc2. Expected: %02x, Received: %02x.", check_BCC2, data[data_length-1]); 
-            PRINT_NOTE("Sending CMD_REJ."); 
-            send_frame_nnsp(fd, A, CMD_REJ(r_reader));  
+            PRINT_NOTE("Sending CMD_REJ.");   
+            send_frame_nnsp(fd, A, CMD_REJ(!curr_s)); 
             continue; 
-        }else PRINT_SUC("BCC2 ok!"); 
+        }else PRINT_SUC("BCC2 ok!");   
 
-        if (send_frame_nnsp(fd, A, CMD_RR(r_reader)) > 0){
-            PRINT_SUC("CMD_RR with R=%d sent.", r_reader); 
-            r_reader = SWITCH(r_reader); 
+        // It's not the desired message. 
+        if (CMD != CMD_S(s_reader)){
+            PRINT_SUC("Sending RR %d", !curr_s);
+            send_frame_nnsp(fd, A, CMD_RR(!curr_s)); 
+            continue;       // Discard the message. 
+        } 
+
+        // Desired message, save the info. 
+        if (send_frame_nnsp(fd, A, CMD_RR(!s_reader)) > 0){
+            PRINT_SUC("CMD_RR with R=%d sent.", !s_reader); 
             s_reader = SWITCH(s_reader); 
             return data_length;
         }
@@ -312,7 +323,7 @@ int send_frame_nnsp(int fd, byte ADDR, byte CMD)
     return write(fd, frame, 5);
 }
 
-int read_frame_i(int fd, byte *buffer, byte CMD){
+int read_frame_i(int fd, byte *buffer, byte *CMD){
     int curr_state= 0, info_length = -1; 
     byte byte; 
 
@@ -343,8 +354,10 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
             // RECEIVE CMD
             case 2: 
                 PRINTF("case 2: %02x\n", byte);  
-                if (byte == CMD)
-                    curr_state++;
+                if (byte == CMD_S(0) || byte == CMD_S(1)){ 
+                    *CMD = byte; 
+                    curr_state++; 
+                }
                 else if (byte == FLAG) 
                     curr_state = 1; 
                 else curr_state = 0;
@@ -354,15 +367,15 @@ int read_frame_i(int fd, byte *buffer, byte CMD){
             // RECEIVE BCC1
             case 3: 
                 PRINTF("case 3: %02x\n", byte);    
-                if (byte == (CMD ^ A))
+                if (byte == (*CMD ^ A))
                     curr_state ++; 
                 else if (byte == FLAG) 
                     curr_state = 1; 
-                else if (CMD == CMD_S(0)){
+                else if (*CMD == CMD_S(0)){
                     send_frame_nnsp(fd, A, CMD_REJ(1)); 
                     curr_state = 0; 
                 }
-                else if (CMD == CMD_S(1)){
+                else if (*CMD == CMD_S(1)){
                     send_frame_nnsp(fd, A, CMD_REJ(0));  
                     curr_state = 0; 
                 } 
@@ -533,11 +546,11 @@ handle_alarm_timeout()
 
     if (numTransmissions > TRIES)
     {
-        PRINT_ERR("Number of tries exceeded\n"); 
-        exit(-1);
+        PRINT_ERR("Number of tries exceeded\n");   
+        exit(-1); 
     }
 
-} 
+}  
 
 void alarm_off() {
     numTransmissions = 0; 

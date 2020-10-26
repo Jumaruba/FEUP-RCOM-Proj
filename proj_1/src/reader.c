@@ -93,13 +93,8 @@ int main(int argc, char **argv) {
     }
 
     printf("NAMEFILE: %s\n", namefile); 
-    printf("FILESIZE: %d\n", filesize);  
-
-    free(info); 
-    free(package);  
-    free(namefile);
-    free(outputfile);
-
+    printf("FILESIZE: %d\n", filesize);   
+    
     PRINT_NOTE("LLCLOSE CALL");
     llclose(fd, RECEPTOR, &oldtio); 
 
