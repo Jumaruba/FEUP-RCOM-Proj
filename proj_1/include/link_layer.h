@@ -37,7 +37,7 @@ typedef unsigned char byte;
  * @param newtio 
  * @return int -1 in case of error, number of the file descriptor otherwise. 
  */
-int llopen(byte * port, int flag, struct termios *oldtio, struct termios *newtio); 
+int llopen(byte * port, int flag, struct termios *oldtio); 
 
 int llwrite(int fd, byte* data, int *data_length); 
 

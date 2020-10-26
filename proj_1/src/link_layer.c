@@ -2,11 +2,12 @@
 
 int numTransmissions = 0; 
 
-int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
+int llopen(byte *port, int flag, struct termios *oldtio)
 {
     int fd = -1;
     int res = -1;
-    
+    struct termios newtio; 
+
     if (flag != TRANSMITTER && flag != RECEPTOR){
         PRINT_ERR("Actual flag %d. Must be 1 or 0.", flag); 
         return -1; 
@@ -14,7 +15,7 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 
     if (TRANSMITTER == flag) { 
 
-        fd = openDescriptor(port, oldtio, newtio); 
+        fd = openDescriptor(port, oldtio, &newtio); 
 
         // Establishment of the connection.  
         while (res != 0) { 
@@ -32,7 +33,7 @@ int llopen(byte *port, int flag, struct termios *oldtio, struct termios *newtio)
 
     else if (RECEPTOR == flag)
     {
-        fd = openDescriptor(port, oldtio, newtio);
+        fd = openDescriptor(port, oldtio, &newtio);
         while(res < 0){
             // Establishment of the connection. 
             read_frame_not_supervision(fd, CMD_SET);

@@ -2,7 +2,7 @@
 
 #include "../include/writer.h"
 
-struct termios oldtio, newtio;
+struct termios oldtio;
 int fd;
 FILE* fp; 
 int seqNum = 0; 
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
    // SET CHANNEL 
    install_alarm();
 
-   fd = llopen(argv[1], TRANSMITTER, &oldtio, &newtio);   
+   fd = llopen(argv[1], TRANSMITTER, &oldtio);   
 
 
 

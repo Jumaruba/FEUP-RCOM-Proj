@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
     // SET CHANNEL
     PRINT_NOTE("LLOPEN CALL"); 
-    if( (fd = llopen(argv[1], RECEPTOR, &oldtio, &newtio)) == -1 ) {
+    if( (fd = llopen(argv[1], RECEPTOR, &oldtio)) == -1 ) {
         PRINT_ERR("Could not open descriptor on port %s.", argv[1]); 
         exit(-1);
     } 
