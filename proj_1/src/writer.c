@@ -2,7 +2,6 @@
 
 #include "../include/writer.h"
 
-struct termios oldtio;
 int fd;
 FILE* fp; 
 int seqNum = 0; 
@@ -30,7 +29,6 @@ int main(int argc, char **argv) {
         }
     }
 
-
     // OPEN FILE  
     byte * namefile = argv[2]; 
     open_file(namefile);
@@ -39,14 +37,11 @@ int main(int argc, char **argv) {
     int fileSize = get_fileSize();
 
    // SET CHANNEL 
-   install_alarm();
-
-   fd = llopen(argv[1], TRANSMITTER, &oldtio);   
-
+   install_alarm();    
+   fd = llopen(argv[1], TRANSMITTER);   
 
 
-
-    //CONTROL PACKAGE START 
+    //CONTROL PACKAGE START  
     int size = create_controlPackage(CTRL_START, namefile, fileSize, pack); 
     llwrite(fd, pack, &size);   
     
@@ -81,18 +76,9 @@ int main(int argc, char **argv) {
 
 
    //CLOSE
-   llclose(fd, TRANSMITTER, &oldtio); 
+   llclose(fd, TRANSMITTER); 
 
 
-}
-
-void install_alarm() {
-    if (signal(SIGALRM, handle_alarm_timeout) == SIG_ERR)
-    {
-        PRINT_ERR("Not possible to install signal, SIG_ERR.");
-        llclose(fd, CMD_DISC, &oldtio);
-    }
-    siginterrupt(SIGALRM, TRUE);
 }
 
 void open_file( byte* nameFile){

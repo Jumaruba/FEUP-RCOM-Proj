@@ -3,7 +3,6 @@
 #include "../include/reader.h"
 
 int fd;
-struct termios oldtio, newtio;
 int seqNum = 0; 
 
 int main(int argc, char **argv) { 
@@ -45,7 +44,7 @@ int main(int argc, char **argv) {
 
     // SET CHANNEL
     PRINT_NOTE("LLOPEN CALL"); 
-    if( (fd = llopen(argv[1], RECEPTOR, &oldtio)) == -1 ) {
+    if( (fd = llopen(argv[1], RECEPTOR)) == -1 ) {
         PRINT_ERR("Could not open descriptor on port %s.", argv[1]); 
         exit(-1);
     } 
@@ -63,8 +62,8 @@ int main(int argc, char **argv) {
     if( (fp = fopen(outputfile, "wb")) == NULL ) {
         PRINT_ERR("%s", stderr); 
         exit(-1);
-    }
-
+    } 
+    
     //READ DATA 
     while(TRUE){   
         if ( (length = llread(fd,package)) < 0){
@@ -96,7 +95,7 @@ int main(int argc, char **argv) {
     printf("FILESIZE: %d\n", filesize);   
     
     PRINT_NOTE("LLCLOSE CALL");
-    llclose(fd, RECEPTOR, &oldtio); 
+    llclose(fd, RECEPTOR); 
 
     if( (fclose(fp)) == EOF ) {
         PRINT_ERR("%s", stderr); 

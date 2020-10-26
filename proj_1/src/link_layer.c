@@ -1,8 +1,11 @@
 #include "../include/link_layer.h"
 
 int numTransmissions = 0; 
+int fd_transmitter = 0; 
+struct termios oldtio_transmitter; 
+struct termios oldtio_receiver; 
 
-int llopen(byte *port, int flag, struct termios *oldtio)
+int llopen(byte *port, int flag)
 {
     int fd = -1;
     int res = -1;
@@ -15,8 +18,9 @@ int llopen(byte *port, int flag, struct termios *oldtio)
 
     if (TRANSMITTER == flag) { 
 
-        fd = openDescriptor(port, oldtio, &newtio); 
-
+        fd = openDescriptor(port, &oldtio_transmitter, &newtio); 
+        fd_transmitter = fd;  
+        
         // Establishment of the connection.  
         while (res != 0) { 
             alarm(3);
@@ -33,7 +37,7 @@ int llopen(byte *port, int flag, struct termios *oldtio)
 
     else if (RECEPTOR == flag)
     {
-        fd = openDescriptor(port, oldtio, &newtio);
+        fd = openDescriptor(port, &oldtio_receiver, &newtio);
         while(res < 0){
             // Establishment of the connection. 
             read_frame_not_supervision(fd, CMD_SET);
@@ -131,7 +135,7 @@ int llread(int fd, byte * data){
     return -1;
 }
 
-int llclose(int fd, int flag, struct termios *oldtio){ 
+int llclose(int fd, int flag){ 
 
     int res = -1; 
 
@@ -163,7 +167,7 @@ int llclose(int fd, int flag, struct termios *oldtio){
             else PRINT_SUC("Sent CMD_UA."); 
             
         } 
-        return closeDescriptor(fd, oldtio); 
+        return closeDescriptor(fd, &oldtio_transmitter); 
 
     }else if (flag == RECEPTOR){    
         while(res < 0){
@@ -182,7 +186,7 @@ int llclose(int fd, int flag, struct termios *oldtio){
                 continue; 
             }else PRINT_SUC("Received CMD_UA");
 
-            return closeDescriptor(fd, oldtio); 
+            return closeDescriptor(fd, &oldtio_receiver); 
         }
     } 
     return -1; 
@@ -532,26 +536,38 @@ int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
 }
 
 int closeDescriptor(int fd, struct termios * oldtio){
+    PRINT_NOTE("Closing descriptor");
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
         perror("tcsetattr");
         exit(-1);
     }
+    PRINT_SUC("Restoured oldtio");
     return close(fd);
 }
 
-handle_alarm_timeout()
-{
+void install_alarm() {
+    if (signal(SIGALRM, handle_alarm_timeout) == SIG_ERR)
+    {
+        PRINT_ERR("Not possible to install signal, SIG_ERR.");
+        llclose(fd_transmitter, CMD_DISC);
+    }
+    siginterrupt(SIGALRM, TRUE);
+}
+
+
+handle_alarm_timeout() {
     numTransmissions++;
     
     PRINT_ERR("Time out #%d", numTransmissions); 
 
     if (numTransmissions > TRIES)
     {
-        PRINT_ERR("Number of tries exceeded\n");   
-        exit(-1); 
+        PRINT_ERR("Number of tries exceeded\n");    
+        closeDescriptor(fd_transmitter, &oldtio_transmitter); 
+        exit(-1);
     }
-
 }  
+
 
 void alarm_off() {
     numTransmissions = 0; 

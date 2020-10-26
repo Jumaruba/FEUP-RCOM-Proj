@@ -13,18 +13,6 @@
 #include "utils.h"
 
  
-typedef enum STATES{
-    START_STATE,
-    FLAG_STATE, 
-    ADDR_STATE, 
-    CMD_STATE, 
-    BBC1_STATE, 
-    INFO_STATE, 
-    SEVEND_STATE, 
-    BBC2_STATE, 
-} ;
-
-
 typedef unsigned char byte; 
 
 /* API -----------------------------------------------------------------------*/ 
@@ -33,17 +21,15 @@ typedef unsigned char byte;
  * 
  * @param port String containing the path of the string.
  * @param flag The plot of the caller, i.e TRANSMITTER, RECEPTOR
- * @param oldtio 
- * @param newtio 
  * @return int -1 in case of error, number of the file descriptor otherwise. 
  */
-int llopen(byte * port, int flag, struct termios *oldtio); 
+int llopen(byte * port, int flag); 
 
 int llwrite(int fd, byte* data, int *data_length); 
 
 int llread(int fd, byte * data); 
 
-int llclose(int fd, int flag, struct termios * oldtio); 
+int llclose(int fd, int flag); 
 
 /* AUX API -------------------------------------------------------------------*/ 
 
@@ -70,7 +56,9 @@ void create_BCC2(byte * data, byte *buffer, int data_length);
 
 /* ALARM -----------------------------------------------------------------------*/ 
 
-int handle_alarm_timeout(); 
+void install_alarm();  
+
+int handle_alarm_timeout();    
 
 void alarm_off(); 
 

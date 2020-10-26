@@ -12,8 +12,6 @@
 
 volatile int STOP = FALSE;
 
-void install_alarm(); 
-
 void open_file(byte* nameFile); 
 
 size_t get_fileSize(); 
