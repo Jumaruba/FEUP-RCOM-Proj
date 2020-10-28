@@ -11,6 +11,7 @@
 #include <signal.h>
 #include "macros.h"
 #include "utils.h"
+#include <errno.h>
 
  
 typedef unsigned char byte; 

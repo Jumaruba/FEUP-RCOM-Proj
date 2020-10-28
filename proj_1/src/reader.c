@@ -26,17 +26,17 @@ int main(int argc, char **argv) {
     if(argc == 3){
         strcpy(outputfile, argv[2]);
         strncpy(firstLetters, argv[1], 9); 
-        if (strcmp(firstLetters, "/dev/ttyS") != 0){
+/*        if (strcmp(firstLetters, "/dev/ttyS") != 0){
             PRINT_ERR("Usage: /dev/ttySX <path_file>");
             exit(-1);
-        }
+        }*/
     }else if(argc == 2){
         outputfile = namefile; 
         strncpy(firstLetters, argv[1], 9); 
-        if (strcmp(firstLetters, "/dev/ttyS") != 0){
+       /* if (strcmp(firstLetters, "/dev/ttyS") != 0){
             PRINT_ERR("Usage: /dev/ttySX <path_file>");
             exit(-1);
-        }
+        }*/
     }else{
         PRINT_ERR("Usage: /dev/ttySX <path_file>");  
         exit(-1); 
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     } 
 
     if( (fp = fopen(outputfile, "wb")) == NULL ) {
-        PRINT_ERR("%s", stderr); 
+        PRINT_ERR("%d", errno); 
         exit(-1);
     } 
     

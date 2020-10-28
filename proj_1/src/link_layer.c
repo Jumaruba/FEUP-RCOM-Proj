@@ -190,7 +190,7 @@ int llclose(int fd, int flag){
                 PRINT_ERR("Not able to receive CMD_UA. Reading CMD_DISC again..."); 
                 continue; 
             }else PRINT_SUC("Received CMD_UA");
-
+		sleep(1);
             return closeDescriptor(fd, &oldtio_receiver); 
         }
     } 
