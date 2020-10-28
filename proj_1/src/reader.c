@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
     if( (fp = fopen(outputfile, "wb")) == NULL ) {
         PRINT_ERR("%s", stderr); 
         exit(-1);
-    } 
-    
+    }  
+
     //READ DATA 
     while(TRUE){   
         if ( (length = llread(fd,package)) < 0){
