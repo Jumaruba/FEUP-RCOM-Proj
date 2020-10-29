@@ -64,8 +64,9 @@ int main(int argc, char **argv) {
             return -1; 
         }
 
+        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;   
+        
         seqNum++;    
-        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize; 
         printf("%d\n", seqNum*contentSize);
     }
         

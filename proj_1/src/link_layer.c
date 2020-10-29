@@ -169,9 +169,13 @@ int llclose(int fd, int flag){
             if (send_frame_nnsp(fd, A, CMD_UA) < 0 ){
                 PRINT_ERR("Failed in sending CMD_UA. Turning off...");
             }
-            else PRINT_SUC("Sent CMD_UA."); 
+            else{ 
+                sleep(1);
+                PRINT_SUC("Sent CMD_UA."); 
+            }
             
         } 
+        
         return closeDescriptor(fd, &oldtio_transmitter); 
 
     }else if (flag == RECEPTOR){    
@@ -190,7 +194,8 @@ int llclose(int fd, int flag){
                 PRINT_ERR("Not able to receive CMD_UA. Reading CMD_DISC again..."); 
                 continue; 
             }else PRINT_SUC("Received CMD_UA");
-		sleep(1);
+
+		    sleep(1);
             return closeDescriptor(fd, &oldtio_receiver); 
         }
     } 
