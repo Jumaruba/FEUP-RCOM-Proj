@@ -7,7 +7,7 @@ FILE* fp;
 int seqNum = 0; 
 
 int main(int argc, char **argv) { 
-    int contentSize = 200,  frameLength = 0, actual_contentSize = 0; 
+    int contentSize = FRAME_SIZE - 10,  frameLength = 0, actual_contentSize = 0; 
     u_int8_t fileread = 1; 
     
 
