@@ -3,7 +3,7 @@
 #define _POSIX_SOURCE       1
 
 
-#define FRAME_SIZE      14              /* This size must not be less than 10*/
+#define FRAME_SIZE      200              /* This size must not be less than 10*/
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
 #define DEBUG  1            /* Set zero to don't show prints. */ 

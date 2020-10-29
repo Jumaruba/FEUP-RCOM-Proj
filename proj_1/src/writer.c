@@ -45,13 +45,14 @@ int main(int argc, char **argv) {
     int size = create_controlPackage(CTRL_START, namefile, fileSize, pack); 
     llwrite(fd, pack, &size);   
     
-    while(TRUE){
+    while(TRUE){ 
+        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;     
+
         if ((actual_contentSize = fread(content, 1, contentSize, fp)) <= 0) { 
             break; 
         }
 
 
-        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;    
         
         if (create_dataPackage(seqNum, content, actual_contentSize, frame_) <0){
             PRINT_ERR("create_dataPackage error"); 
