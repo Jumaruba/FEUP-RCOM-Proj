@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     
     // Information about the file. 
     char * namefile = (char*)malloc(sizeof(char)*MAX_SIZE_ALLOC);
-    char * outputfile = (char*)malloc(sizeof(char)*MAX_SIZE_ALLOC);   
+    char  outputfile[MAX_SIZE_ALLOC]; 
     byte *package = (byte *) malloc(MAX_SIZE_ALLOC*sizeof(byte));  
     byte* info = (byte*)malloc(sizeof(byte)*MAX_SIZE_ALLOC);   
     FILE *fp;
@@ -18,25 +18,15 @@ int main(int argc, char **argv) {
     int filesize;  
     package[0] = 4;  
 
-        
-    u_int8_t received_start = FALSE; 
+    u_int8_t received_start = FALSE;  
+    // CHECK USAGE  
 
-    // CHECK USAGE 
-    char firstLetters[9];
-    if(argc == 3){
-        strcpy(outputfile, argv[2]);
-        strncpy(firstLetters, argv[1], 9); 
-/*        if (strcmp(firstLetters, "/dev/ttyS") != 0){
+    if(argc == 3){ 
+        strcpy(outputfile, argv[2]);  
+        if (strncmp(argv[1], "/dev/ttyS", 9) != 0){ 
             PRINT_ERR("Usage: /dev/ttySX <path_file>");
             exit(-1);
-        }*/
-    }else if(argc == 2){
-        outputfile = namefile; 
-        strncpy(firstLetters, argv[1], 9); 
-       /* if (strcmp(firstLetters, "/dev/ttyS") != 0){
-            PRINT_ERR("Usage: /dev/ttySX <path_file>");
-            exit(-1);
-        }*/
+        }  
     }else{
         PRINT_ERR("Usage: /dev/ttySX <path_file>");  
         exit(-1); 
