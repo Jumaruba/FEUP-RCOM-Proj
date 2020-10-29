@@ -51,6 +51,8 @@ int main(int argc, char **argv) {
         }
 
 
+        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;    
+        
         if (create_dataPackage(seqNum, content, actual_contentSize, frame_) <0){
             PRINT_ERR("create_dataPackage error"); 
             return -1; 
@@ -64,8 +66,7 @@ int main(int argc, char **argv) {
             return -1; 
         }
 
-        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;   
-        
+
         seqNum++;    
         printf("%d\n", seqNum*contentSize);
     }
