@@ -547,7 +547,7 @@ int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
 
 int closeDescriptor(int fd, struct termios * oldtio){
     PRINT_NOTE("Closing descriptor");
-    if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
+    if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
         perror("tcsetattr");
         exit(-1);
     }
