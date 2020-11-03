@@ -3,7 +3,9 @@
 #define _POSIX_SOURCE       1
 
 
-#define FRAME_SIZE      200              /* This size must not be less than 10*/
+#define MAX_SIZE_ALLOC      16000           /* Max size for the vector. always must be higher than (FRAME_SIZE-10)*2 */ 
+#define FRAME_SIZE          1000             /* This size must not be less than 10*/
+
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
 #define DEBUG  1            /* Set zero to don't show prints. */ 
@@ -74,6 +76,5 @@
 #define TRUE                1
 #define SWITCH(s)           !s
 #define BIT(n)              (1 << n)
-#define MAX_SIZE_ALLOC      16000     /* Max size of the package */ 
 #define DELAY_US            0.2
 

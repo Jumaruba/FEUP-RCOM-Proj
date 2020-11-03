@@ -86,7 +86,10 @@ int main(int argc, char **argv) {
     
     PRINT_NOTE("LLCLOSE CALL");
     llclose(fd, RECEPTOR); 
-
+    free(info); 
+    free(package); 
+    free(namefile); 
+    
     if( (fclose(fp)) == EOF ) {
         PRINT_ERR("%s", stderr); 
         exit(-1);
