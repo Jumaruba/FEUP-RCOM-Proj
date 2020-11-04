@@ -83,6 +83,7 @@ int llwrite(int fd, byte *data, int *data_length) {
         else PRINT_SUC("Read CDM=%02x with R=%d", CMD, !s_writer); 
 
         if (CMD == CMD_REJ(!s_writer) || CMD == CMD_REJ(s_writer)){
+            alarm_off(); 
             continue; 
         }
 
@@ -117,7 +118,16 @@ int llread(int fd, byte * data){
 
         // Check the bcc2.  
         check_BCC2 = 0x00; 
-        create_BCC2(data, &check_BCC2, data_length-1);  
+        create_BCC2(data, &check_BCC2, data_length-1);   
+
+        // If wrong bcc2 send CMD REJ. 
+        if (check_BCC2 != data[data_length-1]) {    
+            PRINT_ERR("Wrong bcc2. Expected: %02x, Received: %02x.", check_BCC2, data[data_length-1]); 
+            PRINT_NOTE("Sending CMD_REJ.");   
+            send_frame_nnsp(fd, A, CMD_REJ(!curr_s)); 
+            continue; 
+        }else PRINT_SUC("BCC2 ok!");   
+
 
         // It's not the desired message. 
         if (CMD != CMD_S(s_reader)){ 
@@ -126,14 +136,6 @@ int llread(int fd, byte * data){
             send_frame_nnsp(fd, A, CMD_RR(!curr_s)); 
             continue;       // Discard the message. 
         } 
-
-        // If wrong bcc2 send CMD REJ. 
-        if (check_BCC2 != data[data_length-1]) { 
-            PRINT_ERR("Wrong bcc2. Expected: %02x, Received: %02x.", check_BCC2, data[data_length-1]); 
-            PRINT_NOTE("Sending CMD_REJ.");   
-            send_frame_nnsp(fd, A, CMD_REJ(!curr_s)); 
-            continue; 
-        }else PRINT_SUC("BCC2 ok!");   
 
         // Desired message, save the info. 
         if (send_frame_nnsp(fd, A, CMD_RR(!s_reader)) > 0){
@@ -240,7 +242,7 @@ int read_frame_supervision(int fd, byte *CMD, int r){
         // RECEIVE CMD
         case 2:
             PRINTF("case 2: %02x\n", byte);
-            if (byte == CMD_REJ(r) || byte == CMD_RR(r) || byte == CMD_REJ(!r)){
+            if (byte == CMD_REJ(1) || byte == CMD_RR(r) || byte == CMD_REJ(0)){
                 *CMD = byte; 
                 curr_state++;
             } 
