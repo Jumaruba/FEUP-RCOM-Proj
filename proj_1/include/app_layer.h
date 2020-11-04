@@ -8,7 +8,7 @@ int read_dataPackage(int* seqNum, byte* info, byte* pack);
 
 int create_controlPackage(byte C, byte* nameFile, int length, byte* pack); 
 
-int read_controlPackage(byte* pack, byte* nameFile, int *fileSize, int packSize);  
+int read_controlPackage(byte* pack, byte* nameFile, int *fileSize, int packSize);
 
 
 

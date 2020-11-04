@@ -7,9 +7,7 @@ FILE* fp;
 int seqNum = 0; 
 
 int main(int argc, char **argv) { 
-    int contentSize = FRAME_SIZE - 10,  frameLength = 0, actual_contentSize = 0; 
-    u_int8_t fileread = 1; 
-    
+    int contentSize = FRAME_SIZE - 10,  frameLength = 0, actual_contentSize = 0;
 
     // ALLOCATING VARIABLES 
     char * content[contentSize];
@@ -44,25 +42,22 @@ int main(int argc, char **argv) {
     //CONTROL PACKAGE START  
     int size = create_controlPackage(CTRL_START, namefile, fileSize, pack); 
     llwrite(fd, pack, &size);   
-    
-    while(TRUE){ 
-        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;     
 
+    while(TRUE){
+        if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;     
+        PRINT_NOTE("seqNum %d", seqNum);
         if ((actual_contentSize = fread(content, 1, contentSize, fp)) <= 0) { 
             break; 
         }
-
-
         
         if (create_dataPackage(seqNum, content, actual_contentSize, frame_) <0){
             PRINT_ERR("create_dataPackage error"); 
             return -1; 
         }
-
         
-        frameLength = actual_contentSize + 4; 
 
-        if (llwrite(fd, frame_, &frameLength) < 0){ 
+        frameLength = actual_contentSize + 4; 
+        if (llwrite(fd, frame_, &frameLength) < 0) { 
             PRINT_ERR("LLWRITE error"); 
             return -1; 
         }

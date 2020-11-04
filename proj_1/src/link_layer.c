@@ -5,9 +5,10 @@ int fd_transmitter = 0;
 struct termios oldtio_transmitter; 
 struct termios oldtio_receiver; 
 
-int llopen(byte *port, int flag)
+
+int llopen(char *port, int flag)
 {
-    int fd = -1;
+    int fd;
     int res = -1;
     struct termios newtio; 
 
@@ -54,33 +55,43 @@ int llopen(byte *port, int flag)
 }
 
 int llwrite(int fd, byte *data, int *data_length) {
-    static int s_writer = 0; 
-    int res = -1 ;  
+    static int s_writer = 0;  
+    int frame_length;
     byte CMD;  
     
     byte * frame  = (byte*) malloc(MAX_SIZE_ALLOC*sizeof(byte));    // Alloc max size.  
-
+    byte * data_cpy = (byte*) malloc(MAX_SIZE_ALLOC*sizeof(byte));    // Alloc max size.  
     // Check input function errors.
     if (*data_length < 0) {
         PRINT_ERR("Length must be positive, actual: %d", *data_length);
         return -1;
     }
-
-    // Creating the info to send.
-    int frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
-    
+    memcpy(data_cpy, data, *data_length); 
     // Send info. 
-    while(res != 0){
+    while(TRUE){ 
+    // Creating the info to send.
+        memcpy(data, data_cpy, *data_length);
+        memset(frame, 0, strlen(frame));
+        frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
         alarm(3); 
-        if ((res = write(fd, frame, frame_length)) < 0) 
+        if (write(fd, frame, frame_length) < 0) {
             PRINT_ERR("Not possible to write info frame. Sending again after timeout..."); 
+            continue; 
+        }
         else PRINT_SUC("Sent frame with S=%d", s_writer); 
         
-        if ((res = read_frame_supervision(fd, &CMD, !s_writer)) < 0) {
+        if (read_frame_supervision(fd, &CMD) < 0) {
             PRINT_ERR("Not possible to read info frame. Sending again...");
             continue; 
         }
-        else PRINT_SUC("Read CDM=%02x with R=%d", CMD, !s_writer); 
+        
+        else PRINT_SUC("Read CMD=%02x with R=%d", CMD, !s_writer); 
+
+        if ((CMD == CMD_RR(1) && s_writer == 0) || (CMD == CMD_RR(0) && s_writer == 1)){
+            alarm_off();
+            s_writer = SWITCH(s_writer); 
+            return 0; 
+        } 
 
         if (CMD == CMD_REJ(!s_writer) || CMD == CMD_REJ(s_writer)){
             alarm_off(); 
@@ -88,11 +99,6 @@ int llwrite(int fd, byte *data, int *data_length) {
             continue; 
         }
 
-        if (res >= 0){  
-            alarm_off();
-            s_writer = SWITCH(s_writer); 
-            return 0; 
-        }
         
     } 
     
@@ -104,7 +110,7 @@ int llread(int fd, byte * data){
     byte  check_BCC2, CMD; 
 
     // Will not leave the loop until has a new message. 
-    while(TRUE){  
+    while(TRUE){
         if ((data_length = read_frame_i(fd, data, &CMD)) < 0){
             sleep(DELAY_US); 
             PRINT_NOTE("Trying to read again."); 
@@ -124,10 +130,17 @@ int llread(int fd, byte * data){
         // If wrong bcc2 send CMD REJ. 
         if (check_BCC2 != data[data_length-1]) {    
             PRINT_ERR("Wrong bcc2. Expected: %02x, Received: %02x.", check_BCC2, data[data_length-1]); 
-            PRINT_NOTE("Sending CMD_REJ.");   
-            send_frame_nnsp(fd, A, CMD_REJ(!curr_s)); 
+            PRINT_NOTE("Sending CMD_REJ.");    
+            if (CMD == CMD_S(0))
+                send_frame_nnsp(fd, A, CMD_REJ(1));
+            else if (CMD == CMD_S(1))
+                send_frame_nnsp(fd, A, CMD_REJ(0));
             continue; 
-        }else PRINT_SUC("BCC2 ok!");   
+        }else {
+            
+            PRINT_SUC("Correct bcc2. Expected: %02x, Received: %02x.", check_BCC2, data[data_length-1]); 
+            PRINT_SUC("BCC2 ok!");   
+        }
 
 
         // It's not the desired message. 
@@ -211,7 +224,7 @@ int llclose(int fd, int flag){
     return -1; 
 }
 
-int read_frame_supervision(int fd, byte *CMD, int r){
+int read_frame_supervision(int fd, byte *CMD){
    int curr_state = 0; /* byte that is being read. From 0 to 4.*/
     byte byte;
 
@@ -243,7 +256,7 @@ int read_frame_supervision(int fd, byte *CMD, int r){
         // RECEIVE CMD
         case 2:
             PRINTF("case 2: %02x\n", byte);
-            if (byte == CMD_REJ(1) || byte == CMD_RR(r) || byte == CMD_REJ(0)){
+            if (byte == CMD_REJ(1) || byte == CMD_RR(1) || byte == CMD_RR(0) || byte == CMD_REJ(0)){
                 *CMD = byte; 
                 curr_state++;
             } 
@@ -413,17 +426,14 @@ int read_frame_i(int fd, byte *buffer, byte *CMD){
 
 int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
 { 
-    static int counter = 0; //TODO: delete
-    counter ++;  //TODO: delete
-    int frame_length = 0, bcc_length = 1;   
+    int frame_length, bcc_length = 1;
 
     // Stuffing bcc2 and data.  
     byte *BCC2 = (byte*)malloc(sizeof(byte)); 
     BCC2[0] = 0x00; 
 
     create_BCC2(data, BCC2, data_length);  
-    if (counter == 15) *BCC2 = 0x00;         //TODO: delete
-
+    PRINT_NOTE("BCC %02x", *BCC2);
     byte_stuffing(data, &data_length);  
     byte_stuffing(BCC2, &bcc_length);   
 
@@ -452,10 +462,10 @@ void create_BCC2(byte * data, byte* buffer, int data_length)
 
 int byte_stuffing(byte * frame, int* frame_length)
 { 
-    byte * new_frame ;      
+    byte * new_frame;
     int extra_space = 0;        /* The extra space needed to be added to the frame. */
-    int new_frame_length = 0;   /* The new length of the string frame (extra + length). */ 
-    int actual_pos = 0;         /* Position in the new_frame. */ 
+    int new_frame_length;   /* The new length of the string frame (extra + length). */
+    int actual_pos;         /* Position in the new_frame. */
     int counter = 0;            /* Number of escapes and flags found in the second iteration. */
 
     //  First find all the flags and scapes to avoid multiple reallocs. 
@@ -513,12 +523,13 @@ int byte_destuffing(byte * frame, int * frame_length){
 
     memcpy(frame, new_frame, new_frame_pos); 
     *frame_length = new_frame_pos;
-    free(new_frame); 
+    free(new_frame);
+    return 0;
 }
 
 int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio)
 {
-    int fd = -1; 
+    int fd;
     if((fd = open(port, O_RDWR | O_NOCTTY)) < 0) {
         PRINT_ERR("Invalid port: %s", port);
         exit(-1); 
@@ -572,7 +583,7 @@ void install_alarm() {
 }
 
 
-handle_alarm_timeout() {
+void handle_alarm_timeout() {
     numTransmissions++;
     
     PRINT_ERR("Time out #%d", numTransmissions); 

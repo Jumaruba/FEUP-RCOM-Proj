@@ -24,7 +24,7 @@ typedef unsigned char byte;
  * @param flag The plot of the caller, i.e TRANSMITTER, RECEPTOR
  * @return int -1 in case of error, number of the file descriptor otherwise. 
  */
-int llopen(byte * port, int flag); 
+int llopen(char * port, int flag);
 
 int llwrite(int fd, byte* data, int *data_length); 
 
@@ -36,7 +36,7 @@ int llclose(int fd, int flag);
 
 /* Read and send frames */ 
 
-int read_frame_supervision(int fd, byte *CMD, int r);  
+int read_frame_supervision(int fd, byte *CMD);
 
 int read_frame_not_supervision(int fd, byte CMD);  
 
@@ -57,15 +57,17 @@ void create_BCC2(byte * data, byte *buffer, int data_length);
 
 /* ALARM -----------------------------------------------------------------------*/ 
 
-void install_alarm();  
+void install_alarm();
 
-int handle_alarm_timeout();    
+void handle_alarm_timeout();
 
 void alarm_off(); 
 
 /* OTHERS ---------------------------------------------------------------------*/ 
 
 int openDescriptor(byte *port, struct termios *oldtio, struct termios *newtio);
+
+int closeDescriptor(int fd, struct termios * oldtio);
 
 
 #endif
