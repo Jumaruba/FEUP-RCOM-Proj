@@ -84,6 +84,7 @@ int llwrite(int fd, byte *data, int *data_length) {
 
         if (CMD == CMD_REJ(!s_writer) || CMD == CMD_REJ(s_writer)){
             alarm_off(); 
+            PRINT_ERR("Received REJ");
             continue; 
         }
 
@@ -412,6 +413,8 @@ int read_frame_i(int fd, byte *buffer, byte *CMD){
 
 int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
 { 
+    static int counter = 0; //TODO: delete
+    counter ++;  //TODO: delete
     int frame_length = 0, bcc_length = 1;   
 
     // Stuffing bcc2 and data.  
@@ -419,6 +422,8 @@ int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
     BCC2[0] = 0x00; 
 
     create_BCC2(data, BCC2, data_length);  
+    if (counter == 15) *BCC2 = 0x00;         //TODO: delete
+
     byte_stuffing(data, &data_length);  
     byte_stuffing(BCC2, &bcc_length);   
 
