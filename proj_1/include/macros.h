@@ -1,15 +1,15 @@
-#define BAUDRATE B38400
+#define BAUDRATE B9600
 #define MODEMDEVICE "/dev/ttyS1"
 #define _POSIX_SOURCE       1
 
 
 #define MAX_SIZE_ALLOC      16000           /* Max size for the vector. always must be higher than (FRAME_SIZE-10)*2 */ 
-#define FRAME_SIZE          255				/*This size must not be less than 10*/
+#define FRAME_SIZE          100 /*This size must not be less than 10*/
 
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
 #define DEBUG  1            /* Set zero to don't show prints. */ 
-#define SHOW_OUTPUT 0       /* Show the information inside the state machines. */
+#define SHOW_OUTPUT 0      /* Show the information inside the state machines. */
 #define PRINT_ERR(format, ...) \
     do{ \
     if (DEBUG) \

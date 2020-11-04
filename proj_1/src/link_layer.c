@@ -77,15 +77,15 @@ int llwrite(int fd, byte *data, int *data_length) {
         else PRINT_SUC("Sent frame with S=%d", s_writer); 
         
         if ((res = read_frame_supervision(fd, &CMD, !s_writer)) < 0) {
-            PRINT_ERR("Not possible to read info frame. Sending again..."); 
-            s_writer = SWITCH(s_writer);
+            PRINT_ERR("Not possible to read info frame. Sending again...");
             continue; 
         }
         else PRINT_SUC("Read CDM=%02x with R=%d", CMD, !s_writer); 
 
-        if (CMD == (CMD_REJ(!s_writer) || CMD_REJ(s_writer))){
+        if (CMD == CMD_REJ(!s_writer) || CMD == CMD_REJ(s_writer)){
             continue; 
         }
+
         if (res >= 0){  
             alarm_off();
             s_writer = SWITCH(s_writer); 
@@ -104,7 +104,6 @@ int llread(int fd, byte * data){
     // Will not leave the loop until has a new message. 
     while(TRUE){  
         if ((data_length = read_frame_i(fd, data, &CMD)) < 0){
-            PRINT_ERR("Not possible to read information frame. Sending CMD_REJ..."); 
             sleep(DELAY_US); 
             PRINT_NOTE("Trying to read again."); 
             continue; 
@@ -120,6 +119,14 @@ int llread(int fd, byte * data){
         check_BCC2 = 0x00; 
         create_BCC2(data, &check_BCC2, data_length-1);  
 
+        // It's not the desired message. 
+        if (CMD != CMD_S(s_reader)){ 
+            PRINT_NOTE("Undesired message s_reader %d", s_reader); 
+            PRINT_SUC("Sending RR %d", !curr_s);
+            send_frame_nnsp(fd, A, CMD_RR(!curr_s)); 
+            continue;       // Discard the message. 
+        } 
+
         // If wrong bcc2 send CMD REJ. 
         if (check_BCC2 != data[data_length-1]) { 
             PRINT_ERR("Wrong bcc2. Expected: %02x, Received: %02x.", check_BCC2, data[data_length-1]); 
@@ -127,14 +134,6 @@ int llread(int fd, byte * data){
             send_frame_nnsp(fd, A, CMD_REJ(!curr_s)); 
             continue; 
         }else PRINT_SUC("BCC2 ok!");   
-
-        // It's not the desired message. 
-        if (CMD != CMD_S(s_reader)){ 
-            printf("Undesired message s_reader %d", s_reader); 
-            PRINT_SUC("Sending RR %d", !s_reader);
-            send_frame_nnsp(fd, A, CMD_RR(!s_reader)); 
-            continue;       // Discard the message. 
-        } 
 
         // Desired message, save the info. 
         if (send_frame_nnsp(fd, A, CMD_RR(!s_reader)) > 0){
@@ -392,15 +391,9 @@ int read_frame_i(int fd, byte *buffer, byte *CMD){
                 if (byte == (*CMD ^ A))
                     curr_state ++; 
                 else if (byte == FLAG) 
-                    curr_state = 1; 
-                else if (*CMD == CMD_S(0)){
-                    send_frame_nnsp(fd, A, CMD_REJ(1)); 
+                    curr_state = 1;  
+                else 
                     curr_state = 0; 
-                }
-                else if (*CMD == CMD_S(1)){
-                    send_frame_nnsp(fd, A, CMD_REJ(0));  
-                    curr_state = 0; 
-                } 
                 break;
             // RECEIVE INFO 
             case 4:
