@@ -76,10 +76,16 @@ int llwrite(int fd, byte *data, int *data_length) {
             PRINT_ERR("Not possible to write info frame. Sending again after timeout..."); 
         else PRINT_SUC("Sent frame with S=%d", s_writer); 
         
-        if ((res = read_frame_supervision(fd, &CMD, !s_writer)) < 0) 
+        if ((res = read_frame_supervision(fd, &CMD, !s_writer)) < 0) {
             PRINT_ERR("Not possible to read info frame. Sending again..."); 
+            s_writer = SWITCH(s_writer);
+            continue; 
+        }
         else PRINT_SUC("Read CDM=%02x with R=%d", CMD, !s_writer); 
 
+        if (CMD == (CMD_REJ(!s_writer) || CMD_REJ(s_writer))){
+            continue; 
+        }
         if (res >= 0){  
             alarm_off();
             s_writer = SWITCH(s_writer); 
@@ -123,15 +129,16 @@ int llread(int fd, byte * data){
         }else PRINT_SUC("BCC2 ok!");   
 
         // It's not the desired message. 
-        if (CMD != CMD_S(s_reader)){
-            PRINT_SUC("Sending RR %d", !curr_s);
-            send_frame_nnsp(fd, A, CMD_RR(!curr_s)); 
+        if (CMD != CMD_S(s_reader)){ 
+            printf("Undesired message s_reader %d", s_reader); 
+            PRINT_SUC("Sending RR %d", !s_reader);
+            send_frame_nnsp(fd, A, CMD_RR(!s_reader)); 
             continue;       // Discard the message. 
         } 
 
         // Desired message, save the info. 
         if (send_frame_nnsp(fd, A, CMD_RR(!s_reader)) > 0){
-            PRINT_SUC("CMD_RR with R=%d sent.", !s_reader); 
+            PRINT_SUC("CMD_RR with R=%d sent.", !s_reader);  
             s_reader = SWITCH(s_reader); 
             return data_length;
         }
@@ -234,7 +241,7 @@ int read_frame_supervision(int fd, byte *CMD, int r){
         // RECEIVE CMD
         case 2:
             PRINTF("case 2: %02x\n", byte);
-            if (byte == CMD_REJ(r) || byte == CMD_RR(r)){
+            if (byte == CMD_REJ(r) || byte == CMD_RR(r) || byte == CMD_REJ(!r)){
                 *CMD = byte; 
                 curr_state++;
             } 

@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
         
         frameLength = actual_contentSize + 4; 
 
-        if (llwrite(fd, frame_, &frameLength) < 0){
+        if (llwrite(fd, frame_, &frameLength) < 0){ 
             PRINT_ERR("LLWRITE error"); 
             return -1; 
         }

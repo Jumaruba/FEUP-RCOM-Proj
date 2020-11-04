@@ -8,7 +8,8 @@
 #include <fcntl.h>
 
 
-int main(int argc, char ** argv){
+int main(int argc, char ** argv){ 
+
     FILE* fp; 
     int packSize = 10; 
     int actual_contentSize; 
