@@ -69,7 +69,6 @@ int main(int argc, char **argv) {
 
 
         seqNum++;    
-        printf("%d\n", seqNum*contentSize);
     }
         
     
