@@ -69,10 +69,13 @@ int llwrite(int fd, byte *data, int *data_length) {
     memcpy(data_cpy, data, *data_length); 
     // Send info. 
     while(TRUE){ 
-    // Creating the info to send.
+        
+        // Creating the info to send.
         memcpy(data, data_cpy, *data_length);
         memset(frame, 0, strlen(frame));
-        frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));     
+
+        frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));    
+
         alarm(3); 
         if (write(fd, frame, frame_length) < 0) {
             PRINT_ERR("Not possible to write info frame. Sending again after timeout..."); 
@@ -90,6 +93,8 @@ int llwrite(int fd, byte *data, int *data_length) {
         if ((CMD == CMD_RR(1) && s_writer == 0) || (CMD == CMD_RR(0) && s_writer == 1)){
             alarm_off();
             s_writer = SWITCH(s_writer); 
+            free(frame); 
+            free(data_cpy);
             return 0; 
         } 
 
@@ -449,6 +454,7 @@ int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
 
     frame[frame_length-1] = FLAG;   
 
+    free(BCC2); 
     PRINT_NOTE("Created frame i"); 
     return frame_length; 
 }
