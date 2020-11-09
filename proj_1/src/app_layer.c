@@ -112,6 +112,7 @@ int read_controlPackage(byte* pack, byte* nameFile, int *fileSize, int packSize)
 
     } 
     PRINT_SUC("Read control package."); 
+    free(fileSize_string);
     return 0; 
 }
 
