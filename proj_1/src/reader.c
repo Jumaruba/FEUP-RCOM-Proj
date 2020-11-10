@@ -88,8 +88,8 @@ int main(int argc, char **argv) {
 
     }
 
-    printf("NAMEFILE: %s\n", namefile); 
-    printf("FILESIZE: %d\n", filesize);   
+    PRINT_RED_BCK("NAMEFILE: %s", namefile); 
+    PRINT_RED_BCK("FILESIZE: %d", filesize);   
     
     PRINT_NOTE("LLCLOSE CALL");
     llclose(fd, RECEPTOR); 

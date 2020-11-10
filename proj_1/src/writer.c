@@ -1,6 +1,7 @@
 /*Non-Canonical Input Processing*/
 
 #include "../include/writer.h"
+#include <time.h> 
 
 int fd;
 FILE* fp; 
@@ -43,6 +44,10 @@ int main(int argc, char **argv) {
     int size = create_controlPackage(CTRL_START, namefile, fileSize, pack); 
     llwrite(fd, pack, &size);   
 
+    //TODO: delete later 
+    struct timespec startTime;
+    clock_gettime(CLOCK_REALTIME, &startTime);
+
     while(TRUE){
         if (fileSize - seqNum * contentSize < contentSize ) contentSize = fileSize%contentSize;     
         PRINT_NOTE("seqNum %d", seqNum);
@@ -66,7 +71,12 @@ int main(int argc, char **argv) {
         seqNum++;    
     }
         
-    
+    struct timespec endTime;
+    clock_gettime(CLOCK_REALTIME, &endTime);
+    double sTime = startTime.tv_sec + startTime.tv_nsec * 1e-9;
+    double eTime = endTime.tv_sec + endTime.tv_nsec * 1e-9;
+    PRINT_RED_BCK("Time Passed: %.6lf-", eTime - sTime); 
+
     //CONTROL PACKAGE END 
     size = create_controlPackage(CTRL_END, namefile, fileSize, pack); 
     llwrite(fd, pack, &size); 

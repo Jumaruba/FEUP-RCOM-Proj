@@ -26,13 +26,19 @@
     do{ \
     if (DEBUG) \
     printf("\e[1;34mNOTE\e[0m: %s:%d\t\t::\e[1;34m" format "\e[0m\n", __FILE__, __LINE__, ##__VA_ARGS__ ); \
-    }while(0)
+    }while(0) 
 
+#define PRINT_RED_BCK(format, ...) \
+    do{ \
+    printf("\033[48:2:255:165:0m"format "\033[m\n", ##__VA_ARGS__ ); \
+    }while(0)  
+    
 #define PRINTF(format, ...) \
     do{ \
     if (SHOW_OUTPUT) \
     printf("\e[1;34m"format "\e[0m", ##__VA_ARGS__ ); \
     }while(0)
+
 
 
 /* MACROS FOR THE LLOPEN FLAG --------------------------------------------------------------------------------------*/  
