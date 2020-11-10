@@ -25,7 +25,7 @@ int llopen(char *port, int flag)
 
         // Establishment of the connection.  
         while (res != 0) { 
-            alarm(3);
+            alarm(TIMEOUT);
             if (send_frame_nnsp(fd, A, CMD_SET) < 0)
                 PRINT_ERR("Not possible to send CMD_SET. Sending again after timeout..."); 
             else PRINT_SUC("Written CMD_SET.");
@@ -76,7 +76,7 @@ int llwrite(int fd, byte *data, int *data_length) {
 
         frame_length = create_frame_i(data, frame, *data_length, CMD_S(s_writer));    
 
-        alarm(3); 
+        alarm(TIMEOUT); 
         if (write(fd, frame, frame_length) < 0) {
             PRINT_ERR("Not possible to write info frame. Sending again after timeout..."); 
             continue; 
@@ -178,7 +178,7 @@ int llclose(int fd, int flag){
 
     if (flag == TRANSMITTER){ 
         while(res < 0){                   
-            alarm(3); 
+            alarm(TIMEOUT); 
             if ((res = send_frame_nnsp(fd, A, CMD_DISC)) < 0){
                 PRINT_ERR("Failed sending CMD_DISC. Sending again...");  
                 sleep(DELAY_US);   /* Wait a little before sending again.*/  

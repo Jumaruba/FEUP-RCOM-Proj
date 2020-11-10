@@ -69,7 +69,6 @@
 
 #define T_FILE_SIZE         0
 #define T_FILE_NAME         1
-#define T_MD5               2       //TODO: if we have time, create md5 
 
 /* OTHERS  ---------------------------------------------------------------------------------------------------------*/
 #define FALSE               0

@@ -1,6 +1,5 @@
 #include "link_layer.h" 
 
-int get_infoSlice(int index, byte* data, int length, int packSize, byte* pack);  
 
 int create_dataPackage(int seqNum, byte* info, int length, byte* pack); 
 

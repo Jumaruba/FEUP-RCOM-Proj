@@ -2,33 +2,6 @@
 
 
 
-int get_infoSlice(int index, byte* data, int length, int packSize, byte* pack){ 
-
-    if (length < 0){
-        PRINT_ERR("Length must be positive"); 
-        return -1; 
-    }  
-
-    int posInit = packSize* index;  
-
-    if (posInit > length){
-        PRINT_NOTE("Initial position must be less then the data length");  
-        return -1; 
-    }
-
-    int posEnd  = packSize* (index+1) > length? length: packSize* (index+1);   
-    int actualPackSize = posEnd - posInit;   
- 
-    
-    if (memcpy(pack, &data[posInit], actualPackSize) == NULL){
-        PRINT_ERR("Error creating package"); 
-        return -1; 
-    } 
-
-
-    return actualPackSize; 
-}
-
 int create_dataPackage(int seqNum, byte* info, int length, byte* frame){  
 
     frame[0] = CTRL_DATA; 
