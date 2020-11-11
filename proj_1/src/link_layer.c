@@ -4,7 +4,7 @@ int numTransmissions = 0;
 int fd_transmitter = 0; 
 struct termios oldtio_transmitter; 
 struct termios oldtio_receiver; 
-
+int counter = 0; 
 
 int llopen(char *port, int flag)
 {
@@ -66,6 +66,9 @@ int llwrite(int fd, byte *data, int *data_length) {
         PRINT_ERR("Length must be positive, actual: %d", *data_length);
         return -1;
     }
+    if (counter >= 10) counter = -1;  
+    counter ++; 
+    
     memcpy(data_cpy, data, *data_length); 
     // Send info. 
     while(TRUE){ 
@@ -432,7 +435,7 @@ int read_frame_i(int fd, byte *buffer, byte *CMD){
 int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
 { 
     int frame_length, bcc_length = 1;
-
+    static int error = TRUE; 
     // Stuffing bcc2 and data.  
     byte *BCC2 = (byte*)malloc(sizeof(byte)); 
     BCC2[0] = 0x00; 
@@ -446,8 +449,17 @@ int create_frame_i(byte *data, byte *frame, int data_length, byte CMD)
     frame_length = 5  + bcc_length + data_length;  
     frame[0] = FLAG;
     frame[1] = A;
-    frame[2] = CMD; 
-    frame[3] = frame[1]^frame[2];  
+    frame[2] = CMD;
+
+    //TODO: delete later
+    if (counter > ERROR || error == FALSE){
+        frame[3] = frame[1]^frame[2];   
+        error = TRUE; 
+    } 
+    else{
+        frame[3] = 0; 
+        error = FALSE;
+    }
     // BCC 
     memcpy(&frame[4], data, data_length);    
     memcpy(&frame[4 + data_length], BCC2, bcc_length); 

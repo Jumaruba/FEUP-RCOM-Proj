@@ -5,7 +5,7 @@
 
 #define MAX_SIZE_ALLOC      16000           /* Max size for the vector. always must be higher than (FRAME_SIZE-10)*2 */ 
 #define FRAME_SIZE          400             /*This size must not be less than 10*/
-
+#define ERROR               1               /* One error for each 10 frames*/ 
 /* DEBUG MACROS ------------------------------------------------------------------------------------------------*/
 
 #define DEBUG  1            /* Set zero to don't show prints. */ 
