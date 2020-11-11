@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
     //READ DATA 
     while(TRUE){   
-        sleep(T_PROP);
+        usleep(T_PROP);
         if ( (length = llread(fd,package)) < 0){
             PRINT_ERR("Could not read file descriptor.");
         }
