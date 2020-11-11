@@ -66,7 +66,7 @@ int llwrite(int fd, byte *data, int *data_length) {
         PRINT_ERR("Length must be positive, actual: %d", *data_length);
         return -1;
     }
-    if (counter >= 10) counter = -1;  
+    if (counter > 10) counter = 0;  
     counter ++; 
     
     memcpy(data_cpy, data, *data_length); 
