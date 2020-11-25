@@ -1,6 +1,6 @@
 /*      (C)2000 FEUP  */
 
-#include "../include/macrosh.h"
+#include "../include/clientTCP.h"
 
 
 
