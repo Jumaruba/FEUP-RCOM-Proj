@@ -7,12 +7,11 @@
 #include <netdb.h> 
 #include <sys/types.h>
 #include <netinet/in.h> 
-#include<arpa/inet.h> 
+#include <arpa/inet.h> 
 #include "input_handler.h"
-
+#include "client.h"
 
 struct hostent * getIP(HostRequestData *data);
-
 
 
 // IO functions 

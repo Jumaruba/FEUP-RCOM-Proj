@@ -2,8 +2,7 @@
 
 #define MAX_STRING_LEN          511     // Max size for a string malloc 
 
-#define SERVER_PORT 6000
-#define SERVER_ADDR "192.168.28.96"         // router address 
+#define SERVER_PORT 21 
 
 
 #define DEBUG  1            		/* Set zero to don't show prints. */ 

@@ -26,7 +26,6 @@ struct hostent *getIP(HostRequestData *data)
 
 void print_ip(struct hostent *ent)
 {
-
 	PRINTF_WHITE("IP ADDRESS  \t");
 	PRINTF_BLUE(" %s\n", inet_ntoa(*((struct in_addr *)ent->h_addr)));
 }
