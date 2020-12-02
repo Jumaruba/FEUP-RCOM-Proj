@@ -5,25 +5,20 @@ CC = gcc
 CFLAGS = -Wall  
 
 SRC_DIR = ./src 
-COMMON_SRCS := link_layer.c utils.c app_layer.c
+COMMON_SRCS := input_handler.c
 COMMON_SRC_OBJ = $(COMMON_SRCS:%.c=%.o)  					# common .o files 
 
-MAIN_SRCS := reader.c writer.c  
+MAIN_SRCS := download.c
 
-OBJECTS :=  $(COMMON_SRC_OBJ) writer.o reader.o  		# all .o files 
-TARGETS = reader writer 
+OBJECTS :=  $(COMMON_SRC_OBJ) download.o 		# all .o files 
+TARGETS = download
 all: $(TARGETS) 
 
 .PHONY: all 
 	
-reader: $(OBJECTS)
-	@$(CC) $(CFLAGS) -o reader $(COMMON_SRC_OBJ) reader.o
-	@echo "reader generated successfully!" 
-	
-
-writer: $(OBJECTS)
-	@$(CC) $(CFLAGS) -o writer $(COMMON_SRC_OBJ) writer.o  
-	@echo "writer generated successfully!" 
+download: $(OBJECTS)
+	@$(CC) $(CFLAGS) -o download $(COMMON_SRC_OBJ) download.o
+	@echo "download generated successfully!" 
 
 $(OBJECTS): %.o: %.c 
 	@$(CC) $(CFLAGS) -c $< -o $@  
