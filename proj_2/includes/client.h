@@ -21,6 +21,8 @@
  * @param port      If the port is negative or zero, it's used the default port. Otherwise, the port given is used. 
  * @return int      Returns the socket descriptor. 
  */
-int init_sokect(char* ip_addr, int  port); 
+int init_socket(char* ip_addr, int  port); 
+
+void read_response(int sock_fd, char* response_code); 
 
 #endif 

@@ -75,6 +75,7 @@ void parse_input(char* remain_url, int remain_url_size, HostRequestData* data){
 
 void print_data(HostRequestData* data){
     // Output print. 
+    PRINTF_WHITE("------- USER INPUT -------\n");
     PRINTF_WHITE("USERNAME \t ");
     PRINTF_BLUE("%s\n", data->user); 
     PRINTF_WHITE("PASSWORD \t ");

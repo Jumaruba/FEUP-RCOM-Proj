@@ -5,9 +5,24 @@ int main(int argc, char *argv[])
 
 	HostRequestData *data = (HostRequestData *)malloc(sizeof(HostRequestData));
 
+	// Handle data initial data. 
 	input_handler(argc, argv, data);
 	struct hostent *ent = getIP(data);
-	print_ip(ent);
+	print_ip(ent); 
+
+	// Init socket. 
+	char * ip_addr = inet_ntoa(*((struct in_addr *)ent->h_addr)); 
+	int sock_requester = init_socket(ip_addr, 0);
+
+	write(sock_requester, "user ", 5); 
+	write(sock_requester, data->user, strlen(data->user));  
+
+	// Get the first response code.
+	char response_code[3]; 
+	read_response(sock_requester, response_code);   
+	
+	printf("\n");
+	PRINT_SUC("Response code: %s\n", response_code); 
 
 	return 0;
 }

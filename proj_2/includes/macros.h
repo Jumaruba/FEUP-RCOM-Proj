@@ -7,6 +7,8 @@
 
 #define DEBUG  1            		/* Set zero to don't show prints. */ 
 #define SHOW_OUTPUT 1      			/* Show the information inside the state machines. */
+#define SHOW_TEXT_RESPONSE  0       /* Shows the response text*/ 
+
 
 #define PRINT_ERR(format, ...) \
     do{ \
@@ -38,3 +40,11 @@
     if (SHOW_OUTPUT) \
     printf("\033[1;37m"format "\033[0m", ##__VA_ARGS__ ); \
     }while(0)
+
+
+#define PRINTF_RESPONSE(format, ...) \
+    do{ \
+    if (SHOW_TEXT_RESPONSE) \
+    printf("\033[1;37m"format "\033[0m", ##__VA_ARGS__ ); \
+    }while(0)
+
