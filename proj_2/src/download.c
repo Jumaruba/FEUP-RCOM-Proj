@@ -14,12 +14,12 @@ int main(int argc, char *argv[])
 	char * ip_addr = inet_ntoa(*((struct in_addr *)ent->h_addr)); 
 	int sock_requester = init_socket(ip_addr, 0);
 
-	write(sock_requester, "user ", 5); 
-	write(sock_requester, data->user, strlen(data->user));  
-
 	// Get the first response code.
 	char response_code[3]; 
-	read_response(sock_requester, response_code);   
+	read_rsp(sock_requester, response_code);   
+
+	write_cmd(sock_requester, "user ", data->user); 
+	read_rsp(sock_requester, response_code);
 	
 	printf("\n");
 	PRINT_SUC("Response code: %s\n", response_code); 
@@ -38,7 +38,7 @@ struct hostent *getIP(HostRequestData *data)
 	}
 	return ent;
 }
-
+ 
 void print_ip(struct hostent *ent)
 {
 	PRINTF_WHITE("IP ADDRESS  \t");

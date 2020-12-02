@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <netdb.h>
 #include <strings.h> 
+#include <string.h> 
 #include "macros.h"
 
 
@@ -23,6 +24,8 @@
  */
 int init_socket(char* ip_addr, int  port); 
 
-void read_response(int sock_fd, char* response_code); 
+void read_rsp(int sock_fd, char* response_code); 
+
+void write_cmd(int sock_fd, char* cmd, char* data); 
 
 #endif 

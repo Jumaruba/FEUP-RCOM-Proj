@@ -31,7 +31,7 @@ int init_socket(char *ip_addr, int port)
 } 
 
 
-void read_response(int sock_fd, char* response_code){
+void read_rsp(int sock_fd, char* response_code){
     char byte;  
     int curr_state = 0;  
     int index_response = 0;  
@@ -65,4 +65,10 @@ void read_response(int sock_fd, char* response_code){
         } 
     } 
 
+}
+
+void write_cmd(int sock_fd, char* cmd, char* data){
+    write(sock_fd, cmd, strlen(cmd)); 
+    write(sock_fd, data, strlen(data)); 
+    write(sock_fd, "\n", strlen("\n")); 
 }

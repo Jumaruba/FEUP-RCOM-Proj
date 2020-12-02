@@ -7,7 +7,7 @@
 
 #define DEBUG  1            		/* Set zero to don't show prints. */ 
 #define SHOW_OUTPUT 1      			/* Show the information inside the state machines. */
-#define SHOW_TEXT_RESPONSE  0       /* Shows the response text*/ 
+#define SHOW_TEXT_RESPONSE  1       /* Shows the response text*/ 
 
 
 #define PRINT_ERR(format, ...) \
