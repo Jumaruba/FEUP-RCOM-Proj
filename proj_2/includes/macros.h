@@ -28,9 +28,16 @@
     }while(0)
 
 
-#define PRINTF(format, ...) \
+#define PRINTF_BLUE(format, ...) \
     do{ \
     if (SHOW_OUTPUT) \
     printf("\e[1;34m"format "\e[0m", ##__VA_ARGS__ ); \
     }while(0)
 
+
+
+#define PRINTF_WHITE(format, ...) \
+    do{ \
+    if (SHOW_OUTPUT) \
+    printf("\033[1;37m"format "\033[0m", ##__VA_ARGS__ ); \
+    }while(0)

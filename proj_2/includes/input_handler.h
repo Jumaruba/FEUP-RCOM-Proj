@@ -7,15 +7,16 @@
 #include "macros.h"
 
 typedef struct host_request_data{
-    char * user; 
-    char * password;  
-    char * host; 
-    char * path; 
+    char user[MAX_STRING_LEN]; 
+    char password[MAX_STRING_LEN];  
+    char host[MAX_STRING_LEN]; 
+    char path[MAX_STRING_LEN*2];  
+    char url [MAX_STRING_LEN*5];
 } HostRequestData;
  
-int input_handler(int argc, char **argv, HostRequestData* data); 
+void input_handler(int argc, char **argv, HostRequestData* data); 
 
-void parse_input(char* remain_url, HostRequestData* data); 
-
-void split_input(char* remain_url, char parameters[][MAX_STRING_LEN]); 
+void parse_input(char* remain_url, int remain_url_size, HostRequestData* data); 
+ 
+void print_data(HostRequestData* data); 
 #endif  
