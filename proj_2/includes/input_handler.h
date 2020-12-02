@@ -18,5 +18,6 @@ void input_handler(int argc, char **argv, HostRequestData* data);
 
 void parse_input(char* remain_url, int remain_url_size, HostRequestData* data); 
  
-void print_data(HostRequestData* data); 
+void print_data(HostRequestData* data);  
+
 #endif  

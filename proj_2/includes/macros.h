@@ -27,13 +27,11 @@
     printf("\e[1;34mNOTE\e[0m: %s:%d\t\t::\e[1;34m" format "\e[0m", __FILE__, __LINE__, ##__VA_ARGS__ ); \
     }while(0)
 
-
 #define PRINTF_BLUE(format, ...) \
     do{ \
     if (SHOW_OUTPUT) \
     printf("\e[1;34m"format "\e[0m", ##__VA_ARGS__ ); \
     }while(0)
-
 
 
 #define PRINTF_WHITE(format, ...) \
