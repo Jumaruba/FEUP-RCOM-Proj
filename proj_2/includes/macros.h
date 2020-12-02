@@ -6,9 +6,15 @@
 
 
 #define DEBUG  1            		/* Set zero to don't show prints. */ 
-#define SHOW_OUTPUT 1      			/* Show the information inside the state machines. */
+#define SHOW_OUTPUT         1      	/* Show the information inside the state machines. */
 #define SHOW_TEXT_RESPONSE  1       /* Shows the response text*/ 
 
+// RESPONSES 
+// https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes
+#define PSV_COMPL       "2"     // Positive completion. 
+#define PSV_INTER       "3"     // Positive intermeduate completion. 
+#define NEG_TRANS       "4"     // Negative transitive completion. 
+#define NEG_PERMN       "5"     // Negative permanent completion.
 
 #define PRINT_ERR(format, ...) \
     do{ \
