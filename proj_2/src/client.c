@@ -37,7 +37,8 @@ void read_rsp(int sock_fd, char* response_code){
     
     while(curr_state != 2){
         read(sock_fd, &byte, 1); 
-        PRINTF_RESPONSE("%c", byte);    
+        PRINTF_RESPONSE("%c", byte);
+
         switch(curr_state){
             case 0:   
                 // It's a multiple line response. 
@@ -56,6 +57,7 @@ void read_rsp(int sock_fd, char* response_code){
             break;  
 
             case 1: 
+                // If it's multiple line, goes back to the beggining of state machine.
                 if (byte == '\n' && is_multiple_line){
                     index_response = 0; 
                     curr_state = 0; 

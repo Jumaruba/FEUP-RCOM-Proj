@@ -86,4 +86,5 @@ void print_data(HostRequestData* data){
     io("HOST   ", data->host);  
     io("PATH   ", data->path);  
     io("URL    ", data->url); 
+    io("FILENAME", data->file_name);
 }

@@ -4,47 +4,50 @@ int main(int argc, char *argv[])
 {
 	char port[10];  
 	int real_port; 
+
 	char response_code[4];
-	response_code[3] = '\0';  
+	response_code[3] = '\0';   
+
 	FILE* fp; 
 	char byte; 
 	
-
 	HostRequestData *data = (HostRequestData *)malloc(sizeof(HostRequestData));
 
-	// Handle data initial data.
-	input_handler(argc, argv, data);
+	// Handle data initial data and store at struct HostRequestData; 
+	input_handler(argc, argv, data);		
 	struct hostent *ent = getIP(data); 
 	io("IP ADDRESS", inet_ntoa(*((struct in_addr *)ent->h_addr))); 
 	
-	// REQUESTER ------------------------------------------------ 
+	// REQUEST -------------------------------------------------- 
 
 	// Init socket.
 	char *ip_addr = inet_ntoa(*((struct in_addr *)ent->h_addr));
 	int sock_requester = init_socket(ip_addr, 0);
 
-	// Request the port 
 	identification(sock_requester, data, port);  
 	get_real_port(port, &real_port);  
 
 	// GET FILE --------------------------------------------------
 
-	// Init socket. 
+	// Init socket client. 
 	int sock_reader = init_socket(ip_addr, real_port);
-	write_cmd(sock_requester, "retr ", data->path);   
-	
 
+	// Request file. 
+	write_cmd(sock_requester, "retr ", data->path); 		  
+	// Read answer. 
 	read_rsp(sock_requester, response_code);      
 	if (response_code[0] != PSV_COMPL){
 		PRINT_ERR("Not possible to transfer the file\n"); 
 		exit(-1);
-	}
-	printf("%s\n", data->file_name);
+	} 
+
+	// Open file. 
 	if( (fp = fopen(data->file_name, "wb")) == NULL ) {
 		PRINT_ERR("%d\n", errno); 
 		exit(-1); 
 	} 
 
+	// Add output to file created. 
 	while(1){ 
 		// received 0, means that the connection has been closed. 
 		if (recv(sock_reader, &byte, sizeof(byte), MSG_PEEK | MSG_DONTWAIT) == 0){
@@ -113,7 +116,6 @@ void identification(int sock_fd, HostRequestData *data, char port[])
 struct hostent *getIP(HostRequestData *data)
 {
 	struct hostent *ent;
-
 	if ((ent = gethostbyname(data->host)) == NULL)
 	{
 		PRINT_ERR("Error getting host ip\n");
@@ -125,7 +127,7 @@ struct hostent *getIP(HostRequestData *data)
 void get_file_name(HostRequestData* data){
 	char delim[] = "/"; 
 	char aux[MAX_STRING_LEN]; 
-	strcpy(aux, data->path);
+	strcpy(aux, data->path);		
 	char * ptr = strtok(aux, delim);  
 	while(ptr != NULL){  
 		strcpy(data->file_name, ptr); 
