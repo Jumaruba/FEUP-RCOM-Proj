@@ -5,6 +5,10 @@
 
 void input_handler(int argc, char **argv, HostRequestData* data){
 	
+    if (argc != 2){
+        PRINT_ERR("Wrong number of arguments, usage:: ./download // ftp://[<user>:<password>@]<host>/<url-path>"); 
+        exit(-1);
+    }
     memcpy(data->url, argv[1], strlen(argv[1])); 
 
     // Checks the presence of ftp://
