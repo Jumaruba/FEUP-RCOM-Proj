@@ -1,0 +1,112 @@
+\hypertarget{download_8h}{}\doxysection{includes/download.h File Reference}
+\label{download_8h}\index{includes/download.h@{includes/download.h}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$errno.\+h$>$}\newline
+{\ttfamily \#include $<$netdb.\+h$>$}\newline
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$netinet/in.\+h$>$}\newline
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}input\+\_\+handler.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}client.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}io.\+h\char`\"{}}\newline
+Include dependency graph for download.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{download_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=184pt]{download_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+struct hostent $\ast$ \mbox{\hyperlink{download_8h_a37c542976c62cd968104ffec05200652}{get\+IP}} (\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$data)
+\item 
+void \mbox{\hyperlink{download_8h_a77f3251aeddcc01e6103133bc9d05a90}{identification}} (int sock\+\_\+fd, \mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$data, char port\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Identification steps to access the website by ftp. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{download_8h_a6de633cc8506f0109a0885ba2aba55bd}{get\+\_\+file\+\_\+name}} (\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$data)
+\begin{DoxyCompactList}\small\item\em Get the file name. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{download_8h_a6de633cc8506f0109a0885ba2aba55bd}\label{download_8h_a6de633cc8506f0109a0885ba2aba55bd}} 
+\index{download.h@{download.h}!get\_file\_name@{get\_file\_name}}
+\index{get\_file\_name@{get\_file\_name}!download.h@{download.h}}
+\doxysubsubsection{\texorpdfstring{get\_file\_name()}{get\_file\_name()}}
+{\footnotesize\ttfamily void get\+\_\+file\+\_\+name (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$}]{data }\end{DoxyParamCaption})}
+
+
+
+Get the file name. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & Data structure with information provided by the user. \\
+\hline
+\end{DoxyParams}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=338pt]{download_8h_a6de633cc8506f0109a0885ba2aba55bd_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{download_8h_a37c542976c62cd968104ffec05200652}\label{download_8h_a37c542976c62cd968104ffec05200652}} 
+\index{download.h@{download.h}!getIP@{getIP}}
+\index{getIP@{getIP}!download.h@{download.h}}
+\doxysubsubsection{\texorpdfstring{getIP()}{getIP()}}
+{\footnotesize\ttfamily struct hostent$\ast$ get\+IP (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$}]{data }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=193pt]{download_8h_a37c542976c62cd968104ffec05200652_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{download_8h_a77f3251aeddcc01e6103133bc9d05a90}\label{download_8h_a77f3251aeddcc01e6103133bc9d05a90}} 
+\index{download.h@{download.h}!identification@{identification}}
+\index{identification@{identification}!download.h@{download.h}}
+\doxysubsubsection{\texorpdfstring{identification()}{identification()}}
+{\footnotesize\ttfamily void identification (\begin{DoxyParamCaption}\item[{int}]{sock\+\_\+fd,  }\item[{\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$}]{data,  }\item[{char}]{port\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Identification steps to access the website by ftp. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sock\+\_\+fd} & Socket file descriptor. \\
+\hline
+{\em data} & Data structure with information provided by the user. \\
+\hline
+{\em port} & Port in format i.\+e 410,30, where the client will access and retrieve file. \\
+\hline
+\end{DoxyParams}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=264pt]{download_8h_a77f3251aeddcc01e6103133bc9d05a90_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=225pt]{download_8h_a77f3251aeddcc01e6103133bc9d05a90_icgraph}
+\end{center}
+\end{figure}
