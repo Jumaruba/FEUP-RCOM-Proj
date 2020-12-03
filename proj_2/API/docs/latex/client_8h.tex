@@ -1,0 +1,187 @@
+\hypertarget{client_8h}{}\doxysection{includes/client.h File Reference}
+\label{client_8h}\index{includes/client.h@{includes/client.h}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$sys/socket.\+h$>$}\newline
+{\ttfamily \#include $<$netinet/in.\+h$>$}\newline
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$signal.\+h$>$}\newline
+{\ttfamily \#include $<$netdb.\+h$>$}\newline
+{\ttfamily \#include $<$strings.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}macros.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}io.\+h\char`\"{}}\newline
+Include dependency graph for client.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{client_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=268pt]{client_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{client_8h_a6ed4f798069a2b3530043ffb3b725d62}{init\+\_\+socket}} (char $\ast$ip\+\_\+addr, int port)
+\begin{DoxyCompactList}\small\item\em Initialized a socket. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{client_8h_ace1f051449123d3773f7f439bb9bcd09}{read\+\_\+rsp}} (int sock\+\_\+fd, char $\ast$response\+\_\+code)
+\begin{DoxyCompactList}\small\item\em Reads and treat the answer of a command. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{client_8h_a37a5906e1fa6e2b0e754560d1ce2530d}{read\+\_\+psv}} (int sock\+\_\+fd, char $\ast$response\+\_\+code, char $\ast$port)
+\begin{DoxyCompactList}\small\item\em Read the response for the pasv command. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{client_8h_a5eea246dd6688f227172f9384b552273}{write\+\_\+cmd}} (int sock\+\_\+fd, char $\ast$cmd, char $\ast$data)
+\begin{DoxyCompactList}\small\item\em Write the command in the socket. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{client_8h_ac1b2cbf93047be6203969c376e0115e7}{get\+\_\+real\+\_\+port}} (char port\mbox{[}$\,$\mbox{]}, int $\ast$real\+\_\+port)
+\begin{DoxyCompactList}\small\item\em From the port given by the pasv command get the real port. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{client_8h_ac1b2cbf93047be6203969c376e0115e7}\label{client_8h_ac1b2cbf93047be6203969c376e0115e7}} 
+\index{client.h@{client.h}!get\_real\_port@{get\_real\_port}}
+\index{get\_real\_port@{get\_real\_port}!client.h@{client.h}}
+\doxysubsubsection{\texorpdfstring{get\_real\_port()}{get\_real\_port()}}
+{\footnotesize\ttfamily void get\+\_\+real\+\_\+port (\begin{DoxyParamCaption}\item[{char}]{port\mbox{[}$\,$\mbox{]},  }\item[{int $\ast$}]{real\+\_\+port }\end{DoxyParamCaption})}
+
+
+
+From the port given by the pasv command get the real port. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em port} & Port given by the pasv command, i.\+e \char`\"{}102,40\char`\"{} \\
+\hline
+{\em real\+\_\+port} & Returns the real port as string, i.\+e 102$\ast$256+40 \\
+\hline
+\end{DoxyParams}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=229pt]{client_8h_ac1b2cbf93047be6203969c376e0115e7_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=227pt]{client_8h_ac1b2cbf93047be6203969c376e0115e7_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{client_8h_a6ed4f798069a2b3530043ffb3b725d62}\label{client_8h_a6ed4f798069a2b3530043ffb3b725d62}} 
+\index{client.h@{client.h}!init\_socket@{init\_socket}}
+\index{init\_socket@{init\_socket}!client.h@{client.h}}
+\doxysubsubsection{\texorpdfstring{init\_socket()}{init\_socket()}}
+{\footnotesize\ttfamily int init\+\_\+socket (\begin{DoxyParamCaption}\item[{char $\ast$}]{ip\+\_\+addr,  }\item[{int}]{port }\end{DoxyParamCaption})}
+
+
+
+Initialized a socket. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ip\+\_\+addr} & IP address. \\
+\hline
+{\em port} & If the port is negative or zero, it\textquotesingle{}s used the default port. Otherwise, the port given is used. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int Returns the socket descriptor. 
+\end{DoxyReturn}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=218pt]{client_8h_a6ed4f798069a2b3530043ffb3b725d62_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{client_8h_a37a5906e1fa6e2b0e754560d1ce2530d}\label{client_8h_a37a5906e1fa6e2b0e754560d1ce2530d}} 
+\index{client.h@{client.h}!read\_psv@{read\_psv}}
+\index{read\_psv@{read\_psv}!client.h@{client.h}}
+\doxysubsubsection{\texorpdfstring{read\_psv()}{read\_psv()}}
+{\footnotesize\ttfamily void read\+\_\+psv (\begin{DoxyParamCaption}\item[{int}]{sock\+\_\+fd,  }\item[{char $\ast$}]{response\+\_\+code,  }\item[{char $\ast$}]{port }\end{DoxyParamCaption})}
+
+
+
+Read the response for the pasv command. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sock\+\_\+fd} & Scoket descriptor. \\
+\hline
+{\em response\+\_\+code} & Code response. \\
+\hline
+{\em port} & Number of the port. \\
+\hline
+\end{DoxyParams}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=316pt]{client_8h_a37a5906e1fa6e2b0e754560d1ce2530d_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{client_8h_ace1f051449123d3773f7f439bb9bcd09}\label{client_8h_ace1f051449123d3773f7f439bb9bcd09}} 
+\index{client.h@{client.h}!read\_rsp@{read\_rsp}}
+\index{read\_rsp@{read\_rsp}!client.h@{client.h}}
+\doxysubsubsection{\texorpdfstring{read\_rsp()}{read\_rsp()}}
+{\footnotesize\ttfamily void read\+\_\+rsp (\begin{DoxyParamCaption}\item[{int}]{sock\+\_\+fd,  }\item[{char $\ast$}]{response\+\_\+code }\end{DoxyParamCaption})}
+
+
+
+Reads and treat the answer of a command. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sock\+\_\+fd} & Socket descriptor. \\
+\hline
+{\em response\+\_\+code} & Response of the code. \\
+\hline
+\end{DoxyParams}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=315pt]{client_8h_ace1f051449123d3773f7f439bb9bcd09_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{client_8h_a5eea246dd6688f227172f9384b552273}\label{client_8h_a5eea246dd6688f227172f9384b552273}} 
+\index{client.h@{client.h}!write\_cmd@{write\_cmd}}
+\index{write\_cmd@{write\_cmd}!client.h@{client.h}}
+\doxysubsubsection{\texorpdfstring{write\_cmd()}{write\_cmd()}}
+{\footnotesize\ttfamily void write\+\_\+cmd (\begin{DoxyParamCaption}\item[{int}]{sock\+\_\+fd,  }\item[{char $\ast$}]{cmd,  }\item[{char $\ast$}]{data }\end{DoxyParamCaption})}
+
+
+
+Write the command in the socket. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sock\+\_\+fd} & Socket descriptor. \\
+\hline
+{\em cmd} & Command. \\
+\hline
+{\em data} & Data for the command. \\
+\hline
+\end{DoxyParams}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=322pt]{client_8h_a5eea246dd6688f227172f9384b552273_icgraph}
+\end{center}
+\end{figure}

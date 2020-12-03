@@ -1,0 +1,118 @@
+\hypertarget{input__handler_8c}{}\doxysection{src/input\+\_\+handler.c File Reference}
+\label{input__handler_8c}\index{src/input\_handler.c@{src/input\_handler.c}}
+{\ttfamily \#include \char`\"{}../includes/input\+\_\+handler.\+h\char`\"{}}\newline
+Include dependency graph for input\+\_\+handler.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=259pt]{input__handler_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{input__handler_8c_ac84ab744ddb76fb157710fc9ddc0985f}{input\+\_\+handler}} (int argc, char $\ast$$\ast$argv, \mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$data)
+\begin{DoxyCompactList}\small\item\em Function that handles the input given by the user. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{input__handler_8c_a904926ce251553966a08fe50c4006f25}{parse\+\_\+input}} (char $\ast$remain\+\_\+url, int remain\+\_\+url\+\_\+size, \mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$data)
+\begin{DoxyCompactList}\small\item\em Treats the url provided and extracts all necessary information. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{input__handler_8c_a1e258ed140e36924bef79ed1c241508e}{print\+\_\+data}} (\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$data)
+\begin{DoxyCompactList}\small\item\em IO function to provide a better user interface. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{input__handler_8c_ac84ab744ddb76fb157710fc9ddc0985f}\label{input__handler_8c_ac84ab744ddb76fb157710fc9ddc0985f}} 
+\index{input\_handler.c@{input\_handler.c}!input\_handler@{input\_handler}}
+\index{input\_handler@{input\_handler}!input\_handler.c@{input\_handler.c}}
+\doxysubsubsection{\texorpdfstring{input\_handler()}{input\_handler()}}
+{\footnotesize\ttfamily void input\+\_\+handler (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$$\ast$}]{argv,  }\item[{\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$}]{data }\end{DoxyParamCaption})}
+
+
+
+Function that handles the input given by the user. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argc} & Number of arguments. \\
+\hline
+{\em argv} & Arguments passed. ~\newline
+ \\
+\hline
+{\em data} & Data structure to store information provided by the user. \\
+\hline
+\end{DoxyParams}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=330pt]{input__handler_8c_ac84ab744ddb76fb157710fc9ddc0985f_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=228pt]{input__handler_8c_ac84ab744ddb76fb157710fc9ddc0985f_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{input__handler_8c_a904926ce251553966a08fe50c4006f25}\label{input__handler_8c_a904926ce251553966a08fe50c4006f25}} 
+\index{input\_handler.c@{input\_handler.c}!parse\_input@{parse\_input}}
+\index{parse\_input@{parse\_input}!input\_handler.c@{input\_handler.c}}
+\doxysubsubsection{\texorpdfstring{parse\_input()}{parse\_input()}}
+{\footnotesize\ttfamily void parse\+\_\+input (\begin{DoxyParamCaption}\item[{char $\ast$}]{remain\+\_\+url,  }\item[{int}]{remain\+\_\+url\+\_\+size,  }\item[{\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$}]{data }\end{DoxyParamCaption})}
+
+
+
+Treats the url provided and extracts all necessary information. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em remain\+\_\+url} & U\+RL without \href{ftp://}{\texttt{ ftp\+://}} \\
+\hline
+{\em remain\+\_\+url\+\_\+size} & ~\newline
+ \\
+\hline
+{\em data} & Data structure to store information provided by the user. \\
+\hline
+\end{DoxyParams}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=331pt]{input__handler_8c_a904926ce251553966a08fe50c4006f25_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{input__handler_8c_a1e258ed140e36924bef79ed1c241508e}\label{input__handler_8c_a1e258ed140e36924bef79ed1c241508e}} 
+\index{input\_handler.c@{input\_handler.c}!print\_data@{print\_data}}
+\index{print\_data@{print\_data}!input\_handler.c@{input\_handler.c}}
+\doxysubsubsection{\texorpdfstring{print\_data()}{print\_data()}}
+{\footnotesize\ttfamily void print\+\_\+data (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{input__handler_8h_af04ffa1eca1a1b3d23da416668e23046}{Host\+Request\+Data}} $\ast$}]{data }\end{DoxyParamCaption})}
+
+
+
+IO function to provide a better user interface. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & Data structure to store information provided by the user. \\
+\hline
+\end{DoxyParams}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=212pt]{input__handler_8c_a1e258ed140e36924bef79ed1c241508e_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=323pt]{input__handler_8c_a1e258ed140e36924bef79ed1c241508e_icgraph}
+\end{center}
+\end{figure}

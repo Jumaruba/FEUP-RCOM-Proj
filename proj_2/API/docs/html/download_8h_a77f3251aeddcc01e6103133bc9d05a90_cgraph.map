@@ -1,0 +1,9 @@
+<map id="identification" name="identification">
+<area shape="rect" id="node1" title="Identification steps to access the website by ftp." alt="" coords="5,132,100,159"/>
+<area shape="rect" id="node2" href="$download_8c.html#a6de633cc8506f0109a0885ba2aba55bd" title="Get the file name." alt="" coords="148,5,251,32"/>
+<area shape="rect" id="node3" href="$io_8h.html#a2a59b9bb9dcc9b3c53d3f4d1c7f7c20c" title=" " alt="" coords="180,56,219,83"/>
+<area shape="rect" id="node4" href="$io_8h.html#ace784db7fd9d75e93460729e6f86d0df" title=" " alt="" coords="175,107,224,133"/>
+<area shape="rect" id="node5" href="$client_8h.html#a37a5906e1fa6e2b0e754560d1ce2530d" title="Read the response for the pasv command." alt="" coords="163,157,236,184"/>
+<area shape="rect" id="node6" href="$client_8h.html#ace1f051449123d3773f7f439bb9bcd09" title="Reads and treat the answer of a command." alt="" coords="163,208,235,235"/>
+<area shape="rect" id="node7" href="$client_8h.html#a5eea246dd6688f227172f9384b552273" title="Write the command in the socket." alt="" coords="159,259,240,285"/>
+</map>
