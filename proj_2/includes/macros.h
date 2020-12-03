@@ -3,11 +3,9 @@
 #define MAX_STRING_LEN          511     // Max size for a string malloc 
 
 #define SERVER_PORT 21 
-
-
 #define DEBUG  1            		/* Set zero to don't show prints. */ 
-#define SHOW_OUTPUT         1      	/* Show the information inside the state machines. */
-#define SHOW_TEXT_RESPONSE  1       /* Shows the response text*/ 
+#define SHOW_OUTPUT         1      	/* Shows API default information. */
+#define SHOW_TEXT_RESPONSE  0       /* Shows the response text*/ 
 
 // RESPONSES 
 // https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes

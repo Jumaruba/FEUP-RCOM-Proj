@@ -4,7 +4,8 @@
 #include <string.h>   
 #include <stdlib.h> 
 #include <stdio.h> 
-#include "macros.h"
+#include "macros.h" 
+#include "io.h"
 
 typedef struct host_request_data{
     char user[MAX_STRING_LEN]; 

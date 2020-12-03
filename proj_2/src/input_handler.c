@@ -74,16 +74,11 @@ void parse_input(char* remain_url, int remain_url_size, HostRequestData* data){
 
 
 void print_data(HostRequestData* data){
-    // Output print. 
-    PRINTF_WHITE("------- USER INPUT -------\n");
-    PRINTF_WHITE("USERNAME \t ");
-    PRINTF_BLUE("%s\n", data->user); 
-    PRINTF_WHITE("PASSWORD \t ");
-    PRINTF_BLUE("%s\n", data->password);  
-    PRINTF_WHITE("HOST \t\t "); 
-    PRINTF_BLUE("%s\n", data->host);  
-    PRINTF_WHITE("PATH \t\t "); 
-    PRINTF_BLUE("%s\n", data->path);  
-    PRINTF_WHITE("URL \t\t ");
-    PRINTF_BLUE("%s\n", data->url);  
+    // Output print.  
+    label("USER INPUT");
+    io("USERNAME", data->user); 
+    io("PASSWORD", data->password);  
+    io("HOST   ", data->host);  
+    io("PATH   ", data->path);  
+    io("URL    ", data->url); 
 }

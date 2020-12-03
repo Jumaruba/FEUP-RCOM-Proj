@@ -132,9 +132,7 @@ void real_port(char port[], char real_port[]){
     memcpy(first_pos, &port[0], index_comman);
     memcpy(second_pos, &port[index_comman+1], strlen(port)-index_comman); 
 
-    printf("%s\n", port);
     calculate_real_port(first_pos, second_pos, real_port); 
-
 
     free(first_pos); 
     free(second_pos); 
@@ -146,11 +144,13 @@ void calculate_real_port(char* first_pos, char* second_pos, char real_port[]){
 
     sscanf(first_pos, "%d", &first_pos_int); 
     sscanf(second_pos, "%d", &second_pos_int);
-    
+
     real_port_int = first_pos_int*256 + second_pos_int; 
 
-    sprintf(real_port, "%d", real_port_int); 
+    sprintf(real_port, "%d", real_port_int);  
 
-    printf("%s\n", real_port); 
+    // IO 
+    PRINT_SUC("Real port calculated\n");  
+    io("REAL PORT", real_port); 
     
 }

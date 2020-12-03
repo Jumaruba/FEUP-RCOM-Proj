@@ -10,14 +10,11 @@
 #include <arpa/inet.h> 
 #include "input_handler.h"
 #include "client.h"
+#include "io.h"
 
 struct hostent * getIP(HostRequestData *data);
 
 void request_file(int sock_fd, HostRequestData* data, char port[]); 
-
-
-// IO functions 
-void print_ip(struct hostent *ent); 
 
 
 #endif 

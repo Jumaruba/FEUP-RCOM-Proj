@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
 
 	// Handle data initial data.
 	input_handler(argc, argv, data);
-	struct hostent *ent = getIP(data);
-	print_ip(ent);
+	struct hostent *ent = getIP(data); 
+	io("IP ADDRESS", inet_ntoa(*((struct in_addr *)ent->h_addr))); 
 
 	// Init socket.
 	char *ip_addr = inet_ntoa(*((struct in_addr *)ent->h_addr));
@@ -61,6 +61,10 @@ void request_file(int sock_fd, HostRequestData *data, char port[])
 		exit(-1); 
 	}else PRINT_SUC("Get port [OK]!\n");
 
+	// IO INTERFACE  
+	label("IP CALCULATION");
+	io("PORT FIELDS", port); 
+
 }
 
 struct hostent *getIP(HostRequestData *data)
@@ -75,9 +79,4 @@ struct hostent *getIP(HostRequestData *data)
 	return ent;
 }
 
-// IO functions
-void print_ip(struct hostent *ent)
-{
-	PRINTF_WHITE("IP ADDRESS  \t");
-	PRINTF_BLUE(" %s\n", inet_ntoa(*((struct in_addr *)ent->h_addr)));
-}
+
