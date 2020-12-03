@@ -5,7 +5,9 @@ int main(int argc, char *argv[])
 	char port[10];  
 	int real_port; 
 	char response_code[4];
-	response_code[3] = '\0'; 
+	response_code[3] = '\0';  
+	FILE* fp; 
+	char byte; 
 
 	HostRequestData *data = (HostRequestData *)malloc(sizeof(HostRequestData));
 
@@ -29,15 +31,28 @@ int main(int argc, char *argv[])
 	// Init socket. 
 	int sock_reader = init_socket(ip_addr, real_port);
 	write_cmd(sock_requester, "retr ", data->path);   
-	read_rsp(sock_requester, response_code);    
-	PRINT_SUC("Requested file [OK]!\n");
 	
-	/*
-	char bla; 
-	while(1){
-		if (read(sock_requester, &bla, 1) < 0) break; 
-		printf("%c", bla);
-	} */
+
+	read_rsp(sock_requester, response_code);      
+	if (response_code[0] != PSV_COMPL){
+		PRINT_ERR("Not possible to transfer the file\n"); 
+		exit(-1);
+	}
+
+	if( (fp = fopen("download.txt", "wb")) == NULL ) {
+		PRINT_ERR("%d\n", errno); 
+		exit(-1); 
+	} 
+
+	while(1){ 
+		// received 0, means that the connection has been closed. 
+		if (recv(sock_reader, &byte, sizeof(byte), MSG_PEEK | MSG_DONTWAIT) == 0){
+			break; 
+		}
+		read(sock_reader, &byte, 1); 
+		fwrite(&byte, 1, 1, fp); 
+	}
+		
 	
 	close(sock_requester);
 	close(sock_reader);
@@ -103,5 +118,4 @@ struct hostent *getIP(HostRequestData *data)
 	}
 	return ent;
 }
-
 
