@@ -124,8 +124,9 @@ struct hostent *getIP(HostRequestData *data)
 
 void get_file_name(HostRequestData* data){
 	char delim[] = "/"; 
-
-	char * ptr = strtok(data->path, delim);  
+	char aux[MAX_STRING_LEN]; 
+	strcpy(aux, data->path);
+	char * ptr = strtok(aux, delim);  
 	while(ptr != NULL){  
 		strcpy(data->file_name, ptr); 
 		ptr = strtok(NULL, delim); 
