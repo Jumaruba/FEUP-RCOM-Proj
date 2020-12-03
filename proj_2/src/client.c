@@ -30,7 +30,6 @@ int init_socket(char *ip_addr, int port)
     return sockfd; 
 } 
 
-
 void read_rsp(int sock_fd, char* response_code){
     char byte;  
     int curr_state = 0;  
@@ -92,12 +91,12 @@ void read_psv(int sock_fd, char* response_code, char* port){
             break;  
 
             // Gets the ip address and discard. 
-            case 2:  
+            case 2:   
+                comman_index = byte == ',' ? comman_index+1: comman_index;  
                 if (comman_index == 4){
                     curr_state++; 
                     index_response = 0; 
                 } 
-                comman_index = byte == ',' ? comman_index+1: comman_index;  
             break;  
 
             // Gets the port and store. 
@@ -121,4 +120,37 @@ void write_cmd(int sock_fd, char* cmd, char* data){
     write(sock_fd, cmd, strlen(cmd)); 
     write(sock_fd, data, strlen(data)); 
     write(sock_fd, "\n", strlen("\n")); 
+} 
+
+void real_port(char port[], char real_port[]){ 
+
+    char *first_pos = malloc(4); 
+    char *second_pos = malloc(4);   
+
+    int index_comman = strcspn(port, ","); 
+
+    memcpy(first_pos, &port[0], index_comman);
+    memcpy(second_pos, &port[index_comman+1], strlen(port)-index_comman); 
+
+    printf("%s\n", port);
+    calculate_real_port(first_pos, second_pos, real_port); 
+
+
+    free(first_pos); 
+    free(second_pos); 
+}
+
+void calculate_real_port(char* first_pos, char* second_pos, char real_port[]){
+
+    int first_pos_int, second_pos_int, real_port_int;  
+
+    sscanf(first_pos, "%d", &first_pos_int); 
+    sscanf(second_pos, "%d", &second_pos_int);
+    
+    real_port_int = first_pos_int*256 + second_pos_int; 
+
+    sprintf(real_port, "%d", real_port_int); 
+
+    printf("%s\n", real_port); 
+    
 }

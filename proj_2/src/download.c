@@ -2,7 +2,8 @@
 
 int main(int argc, char *argv[])
 {
-
+	char port[10];  
+	char realPort[10]; 
 	HostRequestData *data = (HostRequestData *)malloc(sizeof(HostRequestData));
 
 	// Handle data initial data.
@@ -14,17 +15,17 @@ int main(int argc, char *argv[])
 	char *ip_addr = inet_ntoa(*((struct in_addr *)ent->h_addr));
 	int sock_requester = init_socket(ip_addr, 0);
 
-	request_file(sock_requester, data); 
+	request_file(sock_requester, data, port);  
+
+	real_port(port, realPort); 
 
 	return 0;
 }
 
-void request_file(int sock_fd, HostRequestData *data)
+void request_file(int sock_fd, HostRequestData *data, char port[])
 { 
-
 	// Get the first response code.
 	char response_code[3]; 
-	char port[10]; 
 	read_rsp(sock_fd, response_code); 
 
 	// Accessing the server must be positive completion. 
@@ -59,8 +60,6 @@ void request_file(int sock_fd, HostRequestData *data)
 		PRINT_ERR("Error entering pasv mode:: %s\n", response_code); 
 		exit(-1); 
 	}else PRINT_SUC("Get port [OK]!\n");
-
-	printf("%s\n", port); 
 
 }
 

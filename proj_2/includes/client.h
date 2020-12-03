@@ -26,8 +26,18 @@ int init_socket(char* ip_addr, int  port);
 
 void read_rsp(int sock_fd, char* response_code); 
 
+/**
+ * @brief Read the response for the pasv command.
+ * 
+ * @param sock_fd           Scoket descriptor. 
+ * @param response_code     Code response. 
+ * @param port              Number of the port. 
+ */
 void read_psv(int sock_fd, char* response_code, char* port); 
 
 void write_cmd(int sock_fd, char* cmd, char* data); 
 
+void real_port(char port[], char real_port[]); 
+ 
+void calculate_real_port(char* first_pos, char* second_pos, char real_port[]); 
 #endif 

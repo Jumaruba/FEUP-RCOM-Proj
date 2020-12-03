@@ -13,7 +13,7 @@
 
 struct hostent * getIP(HostRequestData *data);
 
-void request_file(int sock_fd, HostRequestData* data); 
+void request_file(int sock_fd, HostRequestData* data, char port[]); 
 
 
 // IO functions 
