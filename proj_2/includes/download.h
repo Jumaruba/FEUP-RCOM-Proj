@@ -16,5 +16,6 @@ struct hostent * getIP(HostRequestData *data);
 
 void request_file(int sock_fd, HostRequestData* data, char port[]); 
 
+void get_file_name(HostRequestData* data) ; 
 
 #endif 

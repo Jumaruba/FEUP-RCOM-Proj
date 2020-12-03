@@ -12,7 +12,8 @@ typedef struct host_request_data{
     char password[MAX_STRING_LEN];  
     char host[MAX_STRING_LEN]; 
     char path[MAX_STRING_LEN*2];  
-    char url [MAX_STRING_LEN*5];
+    char url [MAX_STRING_LEN*5]; 
+    char file_name[MAX_STRING_LEN];
 } HostRequestData;
  
 void input_handler(int argc, char **argv, HostRequestData* data); 
@@ -20,5 +21,6 @@ void input_handler(int argc, char **argv, HostRequestData* data);
 void parse_input(char* remain_url, int remain_url_size, HostRequestData* data); 
  
 void print_data(HostRequestData* data);  
+
 
 #endif  

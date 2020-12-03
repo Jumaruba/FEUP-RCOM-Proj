@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
 	response_code[3] = '\0';  
 	FILE* fp; 
 	char byte; 
+	
 
 	HostRequestData *data = (HostRequestData *)malloc(sizeof(HostRequestData));
 
@@ -15,7 +16,7 @@ int main(int argc, char *argv[])
 	input_handler(argc, argv, data);
 	struct hostent *ent = getIP(data); 
 	io("IP ADDRESS", inet_ntoa(*((struct in_addr *)ent->h_addr))); 
-
+	
 	// REQUESTER ------------------------------------------------ 
 
 	// Init socket.
@@ -38,8 +39,8 @@ int main(int argc, char *argv[])
 		PRINT_ERR("Not possible to transfer the file\n"); 
 		exit(-1);
 	}
-
-	if( (fp = fopen("download.txt", "wb")) == NULL ) {
+	printf("%s\n", data->file_name);
+	if( (fp = fopen(data->file_name, "wb")) == NULL ) {
 		PRINT_ERR("%d\n", errno); 
 		exit(-1); 
 	} 
@@ -101,6 +102,8 @@ void request_file(int sock_fd, HostRequestData *data, char port[])
 		exit(-1); 
 	}else PRINT_SUC("Get port [OK]!\n");
 
+	get_file_name(data); 
+
 	// IO INTERFACE  
 	label("IP CALCULATION");
 	io("PORT FIELDS", port); 
@@ -119,3 +122,13 @@ struct hostent *getIP(HostRequestData *data)
 	return ent;
 }
 
+void get_file_name(HostRequestData* data){
+	char delim[] = "/"; 
+
+	char * ptr = strtok(data->path, delim);  
+	while(ptr != NULL){  
+		strcpy(data->file_name, ptr); 
+		ptr = strtok(NULL, delim); 
+	} 
+
+}

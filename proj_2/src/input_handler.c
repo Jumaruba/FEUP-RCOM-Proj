@@ -72,6 +72,7 @@ void parse_input(char* remain_url, int remain_url_size, HostRequestData* data){
 
 }   
 
+
 // IO 
 void print_data(HostRequestData* data){
     // Output print.  

@@ -59,5 +59,4 @@ void write_cmd(int sock_fd, char* cmd, char* data);
  */
 void get_real_port(char port[], int* real_port); 
 
-
 #endif 
