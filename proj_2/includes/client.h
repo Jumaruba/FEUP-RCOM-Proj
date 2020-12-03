@@ -25,6 +25,12 @@
  */
 int init_socket(char* ip_addr, int  port); 
 
+/**
+ * @brief Reads and treat the answer of a command. 
+ * 
+ * @param sock_fd           Socket descriptor. 
+ * @param response_code     Response of the code. 
+ */
 void read_rsp(int sock_fd, char* response_code); 
 
 /**
@@ -36,9 +42,22 @@ void read_rsp(int sock_fd, char* response_code);
  */
 void read_psv(int sock_fd, char* response_code, char* port); 
 
+/**
+ * @brief Write the command in the socket 
+ * 
+ * @param sock_fd           Socket descriptor. 
+ * @param cmd               Command. 
+ * @param data              Data for the command. 
+ */
 void write_cmd(int sock_fd, char* cmd, char* data); 
 
-void real_port(char port[], char real_port[]); 
- 
-void calculate_real_port(char* first_pos, char* second_pos, char real_port[]); 
+/**
+ * @brief From the port given by the pasv command get the real port. 
+ * 
+ * @param port              Port given by the pasv command, i.e "102,40"
+ * @param real_port         Returns the real port as string, i.e 102*256+40
+ */
+void get_real_port(char port[], int* real_port); 
+
+
 #endif 

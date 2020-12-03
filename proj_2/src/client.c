@@ -5,7 +5,6 @@ int init_socket(char *ip_addr, int port)
     int sockfd;
     struct sockaddr_in server_addr;
     int actual_port = port <= 0 ? SERVER_PORT : port; 
-
     
     /*server address handling*/
     bzero((char *)&server_addr, sizeof(server_addr));
@@ -34,12 +33,11 @@ void read_rsp(int sock_fd, char* response_code){
     char byte;  
     int curr_state = 0;  
     int index_response = 0;  
-    int is_multiple_line = 0;       // If it's a multiple line response. 
+    int is_multiple_line = 0;       // If it's a multiple line response.  
     
     while(curr_state != 2){
         read(sock_fd, &byte, 1); 
-        PRINTF_RESPONSE("%c", byte);   
-
+        PRINTF_RESPONSE("%c", byte);    
         switch(curr_state){
             case 0:   
                 // It's a multiple line response. 
@@ -48,8 +46,10 @@ void read_rsp(int sock_fd, char* response_code){
                     curr_state = 1; 
                 }  
                 // One line response 
-                else if (byte == ' ') { 
-                    is_multiple_line = 0;
+                else if (byte == ' ') {  
+                    // Expect another reply before proceeding with a new command
+                    if (response_code[0] == PSV_PREL) is_multiple_line = 1; 
+                    else is_multiple_line = 0;
                     curr_state = 1;     
                 }
                 else response_code[index_response++] = byte; 
@@ -122,35 +122,28 @@ void write_cmd(int sock_fd, char* cmd, char* data){
     write(sock_fd, "\n", strlen("\n")); 
 } 
 
-void real_port(char port[], char real_port[]){ 
+void get_real_port(char port[], int* real_port){
 
     char *first_pos = malloc(4); 
     char *second_pos = malloc(4);   
+    int first_pos_int, second_pos_int;   
 
     int index_comman = strcspn(port, ","); 
 
+    // Separate bytes by comman.
     memcpy(first_pos, &port[0], index_comman);
     memcpy(second_pos, &port[index_comman+1], strlen(port)-index_comman); 
-
-    calculate_real_port(first_pos, second_pos, real_port); 
-
-    free(first_pos); 
-    free(second_pos); 
-}
-
-void calculate_real_port(char* first_pos, char* second_pos, char real_port[]){
-
-    int first_pos_int, second_pos_int, real_port_int;  
-
+ 
+    // From string to integer. 
     sscanf(first_pos, "%d", &first_pos_int); 
     sscanf(second_pos, "%d", &second_pos_int);
 
-    real_port_int = first_pos_int*256 + second_pos_int; 
-
-    sprintf(real_port, "%d", real_port_int);  
+    *real_port = first_pos_int*256 + second_pos_int;  
 
     // IO 
     PRINT_SUC("Real port calculated\n");  
-    io("REAL PORT", real_port); 
-    
+    io_int("REAL PORT", *real_port);  
+
+    free(first_pos); 
+    free(second_pos); 
 }

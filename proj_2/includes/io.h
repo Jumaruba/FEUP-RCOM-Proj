@@ -11,6 +11,7 @@ void label(char* text);
 
 void io(char* text, char* value); 
 
+void io_int(char* text, int value); 
 
 
 

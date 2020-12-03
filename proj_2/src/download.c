@@ -3,7 +3,10 @@
 int main(int argc, char *argv[])
 {
 	char port[10];  
-	char realPort[10]; 
+	int real_port; 
+	char response_code[4];
+	response_code[3] = '\0'; 
+
 	HostRequestData *data = (HostRequestData *)malloc(sizeof(HostRequestData));
 
 	// Handle data initial data.
@@ -11,13 +14,33 @@ int main(int argc, char *argv[])
 	struct hostent *ent = getIP(data); 
 	io("IP ADDRESS", inet_ntoa(*((struct in_addr *)ent->h_addr))); 
 
+	// REQUESTER ------------------------------------------------ 
+
 	// Init socket.
 	char *ip_addr = inet_ntoa(*((struct in_addr *)ent->h_addr));
 	int sock_requester = init_socket(ip_addr, 0);
 
+	// Request the port 
 	request_file(sock_requester, data, port);  
+	get_real_port(port, &real_port);  
 
-	real_port(port, realPort); 
+	// GET FILE --------------------------------------------------
+
+	// Init socket. 
+	int sock_reader = init_socket(ip_addr, real_port);
+	write_cmd(sock_requester, "retr ", data->path);   
+	read_rsp(sock_requester, response_code);    
+	PRINT_SUC("Requested file [OK]!\n");
+	
+	/*
+	char bla; 
+	while(1){
+		if (read(sock_requester, &bla, 1) < 0) break; 
+		printf("%c", bla);
+	} */
+	
+	close(sock_requester);
+	close(sock_reader);
 
 	return 0;
 }
@@ -25,7 +48,9 @@ int main(int argc, char *argv[])
 void request_file(int sock_fd, HostRequestData *data, char port[])
 { 
 	// Get the first response code.
-	char response_code[3]; 
+	char response_code[4]; 
+	response_code[3] = '\0';  
+
 	read_rsp(sock_fd, response_code); 
 
 	// Accessing the server must be positive completion. 

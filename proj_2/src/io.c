@@ -13,4 +13,9 @@ void label(char *text){
 void io(char* text, char* value){
 	PRINTF_WHITE("%s \t", text);
 	PRINTF_BLUE(" %s\n", value); 
+} 
+
+void io_int(char* text, int value){
+	PRINTF_WHITE("%s \t", text);
+	PRINTF_BLUE(" %d\n", value); 
 }

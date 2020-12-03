@@ -5,10 +5,11 @@
 #define SERVER_PORT 21 
 #define DEBUG  1            		/* Set zero to don't show prints. */ 
 #define SHOW_OUTPUT         1      	/* Shows API default information. */
-#define SHOW_TEXT_RESPONSE  0       /* Shows the response text*/ 
+#define SHOW_TEXT_RESPONSE  1       /* Shows the response text*/ 
 
 // RESPONSES 
-// https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes
+// https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes 
+#define PSV_PREL        '1'     // Positive preliminary reply. 
 #define PSV_COMPL       '2'     // Positive completion. 
 #define PSV_INTER       '3'     // Positive intermeduate completion. 
 #define NEG_TRANS       '4'     // Negative transitive completion. 
