@@ -11,10 +11,10 @@
 
 // RESPONSES 
 // https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes
-#define PSV_COMPL       "2"     // Positive completion. 
-#define PSV_INTER       "3"     // Positive intermeduate completion. 
-#define NEG_TRANS       "4"     // Negative transitive completion. 
-#define NEG_PERMN       "5"     // Negative permanent completion.
+#define PSV_COMPL       '2'     // Positive completion. 
+#define PSV_INTER       '3'     // Positive intermeduate completion. 
+#define NEG_TRANS       '4'     // Negative transitive completion. 
+#define NEG_PERMN       '5'     // Negative permanent completion.
 
 #define PRINT_ERR(format, ...) \
     do{ \

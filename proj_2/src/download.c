@@ -14,10 +14,7 @@ int main(int argc, char *argv[])
 	char *ip_addr = inet_ntoa(*((struct in_addr *)ent->h_addr));
 	int sock_requester = init_socket(ip_addr, 0);
 
-
-
-	printf("\n");
-	PRINT_SUC("Response code: %s\n", response_code);
+	request_file(sock_requester, data); 
 
 	return 0;
 }
@@ -44,7 +41,13 @@ void request_file(int sock_fd, HostRequestData *data)
 		exit(-1); 
 	}
 
-	// Write the password.
+	// Write the password. 
+	if (response_code[0] != PSV_INTER){
+		PRINT_ERR("Error writing pass:: %s\n", response_code); 
+		exit(-1);
+	}
+
+	
 
 
 }
