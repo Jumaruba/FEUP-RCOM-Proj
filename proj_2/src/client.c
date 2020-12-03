@@ -36,7 +36,7 @@ void read_rsp(int sock_fd, char* response_code){
     int curr_state = 0;  
     int index_response = 0;  
     int is_multiple_line = 0;       // If it's a multiple line response. 
-
+    
     while(curr_state != 2){
         read(sock_fd, &byte, 1); 
         PRINTF_RESPONSE("%c", byte);   
@@ -47,7 +47,8 @@ void read_rsp(int sock_fd, char* response_code){
                 if (byte == '-'){ 
                     is_multiple_line = 1; 
                     curr_state = 1; 
-                } 
+                }  
+                // One line response 
                 else if (byte == ' ') { 
                     is_multiple_line = 0;
                     curr_state = 1;     
@@ -60,11 +61,60 @@ void read_rsp(int sock_fd, char* response_code){
                     index_response = 0; 
                     curr_state = 0; 
                 }
-                else if (byte == '\n' && !is_multiple_line) curr_state = 2; 
+                else if (byte == '\n' && !is_multiple_line) curr_state = 2;  
             break; 
         } 
     } 
 
+}
+
+void read_psv(int sock_fd, char* response_code, char* port){
+    char byte;  
+    int curr_state = 0;  
+    int index_response = 0;  
+    int comman_index = 0;  
+
+    while(curr_state != 5){
+        read(sock_fd, &byte, 1); 
+        PRINTF_RESPONSE("%c", byte);   
+
+        switch(curr_state){ 
+
+            // Always one line response. 
+            case 0:   
+                if (byte == ' ') curr_state++; 
+                else response_code[index_response++] = byte; 
+            break;     
+
+            // Discard until '(' 
+            case 1:  
+                if (byte == '(') curr_state++;
+            break;  
+
+            // Gets the ip address and discard. 
+            case 2:  
+                if (comman_index == 4){
+                    curr_state++; 
+                    index_response = 0; 
+                } 
+                comman_index = byte == ',' ? comman_index+1: comman_index;  
+            break;  
+
+            // Gets the port and store. 
+            case 3: 
+                if (byte == ')') {
+                    curr_state = 4;   
+                    port[index_response] = '\0'; 
+                }
+                else port[index_response++] = byte;  
+            break;   
+ 
+            // Waits for the end of line 
+            case 4:
+                if (byte == '\n') curr_state++; 
+            break; 
+        } 
+    } 
 }
 
 void write_cmd(int sock_fd, char* cmd, char* data){

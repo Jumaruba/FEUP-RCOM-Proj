@@ -23,7 +23,8 @@ void request_file(int sock_fd, HostRequestData *data)
 { 
 
 	// Get the first response code.
-	char response_code[3];
+	char response_code[3]; 
+	char port[10]; 
 	read_rsp(sock_fd, response_code); 
 
 	// Accessing the server must be positive completion. 
@@ -50,9 +51,16 @@ void request_file(int sock_fd, HostRequestData *data)
 		exit(-1);
 	}else PRINT_SUC("Pass [OK]!\n");
 
+	// Enter pasv mode. 
+	write_cmd(sock_fd, "pasv", "");
+	read_psv(sock_fd, response_code, port); 
 
+	if (response_code[0] != PSV_COMPL){
+		PRINT_ERR("Error entering pasv mode:: %s\n", response_code); 
+		exit(-1); 
+	}else PRINT_SUC("Get port [OK]!\n");
 
-
+	printf("%s\n", port); 
 
 }
 

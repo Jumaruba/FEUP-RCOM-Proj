@@ -26,6 +26,8 @@ int init_socket(char* ip_addr, int  port);
 
 void read_rsp(int sock_fd, char* response_code); 
 
+void read_psv(int sock_fd, char* response_code, char* port); 
+
 void write_cmd(int sock_fd, char* cmd, char* data); 
 
 #endif 
