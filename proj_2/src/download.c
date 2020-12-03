@@ -36,18 +36,22 @@ void request_file(int sock_fd, HostRequestData *data)
 	write_cmd(sock_fd, "user ", data->user);
 	read_rsp(sock_fd, response_code);  
 
-	if (response_code[0] != PSV_INTER){
+	if (response_code[0] != PSV_INTER && response_code[0] != PSV_COMPL){
 		PRINT_ERR("Error writing user:: %s\n", response_code); 
 		exit(-1); 
-	}
+	}else PRINT_SUC("User [OK]!\n");
 
-	// Write the password. 
-	if (response_code[0] != PSV_INTER){
+	// Write the password.  
+	write_cmd(sock_fd, "pass ", data->password); 
+	read_rsp(sock_fd, response_code); 
+
+	if (response_code[0] != PSV_INTER && response_code[0] != PSV_COMPL){
 		PRINT_ERR("Error writing pass:: %s\n", response_code); 
 		exit(-1);
-	}
+	}else PRINT_SUC("Pass [OK]!\n");
 
-	
+
+
 
 
 }
