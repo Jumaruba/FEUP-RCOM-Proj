@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	int sock_requester = init_socket(ip_addr, 0);
 
 	// Request the port 
-	request_file(sock_requester, data, port);  
+	identification(sock_requester, data, port);  
 	get_real_port(port, &real_port);  
 
 	// GET FILE --------------------------------------------------
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void request_file(int sock_fd, HostRequestData *data, char port[])
+void identification(int sock_fd, HostRequestData *data, char port[])
 { 
 	// Get the first response code.
 	char response_code[4]; 

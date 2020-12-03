@@ -14,8 +14,20 @@
 
 struct hostent * getIP(HostRequestData *data);
 
-void request_file(int sock_fd, HostRequestData* data, char port[]); 
+/**
+ * @brief Identification steps to access the website by ftp. 
+ * 
+ * @param sock_fd   Socket file descriptor. 
+ * @param data      Data structure with information provided by the user. 
+ * @param port      Port in format i.e 410,30, where the client will access and retrieve file.
+ */
+void identification(int sock_fd, HostRequestData* data, char port[]); 
 
+/**
+ * @brief Get the file name. 
+ * 
+ * @param data Data structure with information provided by the user. 
+ */
 void get_file_name(HostRequestData* data) ; 
 
 #endif 
