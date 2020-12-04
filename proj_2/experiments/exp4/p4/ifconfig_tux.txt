@@ -1,0 +1,20 @@
+root@tux62:~# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.61.1  netmask 255.255.255.0  broadcast 172.16.61.255
+        inet6 fe80::221:5aff:fe5a:7d9c  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:5a:5a:7d:9c  txqueuelen 1000  (Ethernet)
+        RX packets 15375  bytes 17408599 (16.6 MiB)
+        RX errors 0  dropped 7  overruns 0  frame 0
+        TX packets 9580  bytes 1369980 (1.3 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 17  
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 124  bytes 9134 (8.9 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 124  bytes 9134 (8.9 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
