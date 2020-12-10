@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	write_cmd(sock_requester, "retr ", data->path); 		  
 	// Read answer. 
 	read_rsp(sock_requester, response_code);      
-	if (response_code[0] != PSV_COMPL){
+	if (response_code[0] != PSV_COMPL && !exceptions_one_line(response_code)){
 		PRINT_ERR("Not possible to transfer the file\n"); 
 		exit(-1);
 	} 
@@ -53,10 +53,20 @@ int main(int argc, char *argv[])
 		if (recv(sock_reader, &byte, sizeof(byte), MSG_PEEK | MSG_DONTWAIT) == 0){
 			break; 
 		}
-		read(sock_reader, &byte, 1); 
-		fwrite(&byte, 1, 1, fp); 
+		if(!read(sock_reader, &byte, 1)){
+			PRINT_ERR("Error while transfering file.\n"); 
+			exit(-1);
+		} 
+		fwrite(&byte, 1, 1, fp);  
 	}
 		
+	if (exceptions_one_line(response_code)){
+		read_rsp(sock_requester, response_code); 
+		if (response_code[0] != PSV_COMPL){
+			PRINT_ERR("Not possible to transfer the file\n"); 
+			exit(-1);
+		}   
+	} 
 	
 	close(sock_requester);
 	close(sock_reader);

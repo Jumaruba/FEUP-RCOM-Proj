@@ -19,3 +19,10 @@ void io_int(char* text, int value){
 	PRINTF_WHITE("%s \t", text);
 	PRINTF_BLUE(" %d\n", value); 
 }
+
+bool exceptions_one_line(char *code){
+	//150
+	if(*(code) == '1' && *(code+1) == '5' && *(code+2) == '0') return true;
+	if(*(code) == '1' && *(code+1) == '2' && *(code+2) == '5') return true;
+	return false;
+}

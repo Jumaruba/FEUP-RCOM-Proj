@@ -49,7 +49,7 @@ void read_rsp(int sock_fd, char* response_code){
                 // One line response 
                 else if (byte == ' ') {  
                     // Expect another reply before proceeding with a new command
-                    if (response_code[0] == PSV_PREL) is_multiple_line = 1; 
+                    if (response_code[0] == PSV_PREL && exceptions_one_line(response_code)) is_multiple_line = 1; 
                     else is_multiple_line = 0;
                     curr_state = 1;     
                 }
