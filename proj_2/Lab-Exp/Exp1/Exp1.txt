@@ -1,0 +1,61 @@
+root@tux63:~# ifconfig eth0 172.16.60.1/24
+root@tux63:~# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.60.1  netmask 255.255.255.0  broadcast 172.16.60.255
+        inet6 fe80::221:5aff:fe61:2f4e  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:5a:61:2f:4e  txqueuelen 1000  (Ethernet)
+        RX packets 33112  bytes 38250153 (36.4 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 20329  bytes 2500182 (2.3 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 17  
+
+eth1: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.16.1.63  netmask 255.255.255.0  broadcast 172.16.1.255
+        inet6 fe80::2c0:dfff:fe25:4066  prefixlen 64  scopeid 0x20<link>
+        ether 00:c0:df:25:40:66  txqueuelen 1000  (Ethernet)
+        RX packets 10472  bytes 11135460 (10.6 MiB)
+        RX errors 0  dropped 9  overruns 0  frame 0
+        TX packets 6515  bytes 864221 (843.9 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 3452  bytes 338730 (330.7 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 3452  bytes 338730 (330.7 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@tux63:~# ping 172.16.60.254
+PING 172.16.60.254 (172.16.60.254) 56(84) bytes of data.
+64 bytes from 172.16.60.254: icmp_seq=1 ttl=64 time=0.180 ms
+64 bytes from 172.16.60.254: icmp_seq=2 ttl=64 time=0.187 ms
+64 bytes from 172.16.60.254: icmp_seq=3 ttl=64 time=0.161 ms
+64 bytes from 172.16.60.254: icmp_seq=4 ttl=64 time=0.152 ms
+64 bytes from 172.16.60.254: icmp_seq=5 ttl=64 time=0.143 ms
+64 bytes from 172.16.60.254: icmp_seq=6 ttl=64 time=0.133 ms
+64 bytes from 172.16.60.254: icmp_seq=7 ttl=64 time=0.168 ms
+^C
+--- 172.16.60.254 ping statistics ---
+7 packets transmitted, 7 received, 0% packet loss, time 135ms
+rtt min/avg/max/mdev = 0.133/0.160/0.187/0.022 ms
+root@tux63:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         172.16.1.254    0.0.0.0         UG    0      0        0 eth1
+172.16.1.0      0.0.0.0         255.255.255.0   U     0      0        0 eth1
+172.16.60.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+
+? (172.16.1.1) at <incomplete> on eth1
+? (172.16.60.254) at 00:21:5a:c5:61:bb [ether] on eth0
+? (172.16.1.254) at <incomplete> on eth1
+
+root@tux63:~# arp -d 172.16.60.254
+root@tux63:~# arp -a
+? (172.16.1.1) at <incomplete> on eth1
+? (172.16.1.254) at <incomplete> on eth1
+root@tux63:~# 
+
+
