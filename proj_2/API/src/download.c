@@ -48,18 +48,21 @@ int main(int argc, char *argv[])
 	} 
 
 	// Add output to file created. 
-	while(1){ 
+	char *reading = malloc(sizeof(100000000000*sizeof(char)));
+
+	while(recv(sock_reader, reading, sizeof(reading), MSG_PEEK | MSG_DONTWAIT)){ 
 		// received 0, means that the connection has been closed. 
-		if (recv(sock_reader, &byte, sizeof(byte), MSG_PEEK | MSG_DONTWAIT) == 0){
-			break; 
-		}
-		if(!read(sock_reader, &byte, 1)){
+		
+		if(!read(sock_reader, reading, sizeof(reading))){
 			PRINT_ERR("Error while transfering file.\n"); 
 			exit(-1);
 		} 
-		fwrite(&byte, 1, 1, fp);  
+		fwrite(reading, strlen(reading), 1, fp);  
+		memset(reading, 0, strlen(reading));
 	}
-		
+	
+	free(reading);
+
 	if (exceptions_one_line(response_code)){
 		read_rsp(sock_requester, response_code); 
 		if (response_code[0] != PSV_COMPL){
