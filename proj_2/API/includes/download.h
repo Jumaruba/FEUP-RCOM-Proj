@@ -11,6 +11,7 @@
 #include "input_handler.h"
 #include "client.h"
 #include "io.h"
+#include "utils.h"
 
 struct hostent * getIP(HostRequestData *data);
 

@@ -9,7 +9,8 @@ int main(int argc, char *argv[])
 	response_code[3] = '\0';   
 
 	FILE* fp; 
-	char byte; 
+	char *reading = malloc(10000*sizeof(char));
+	int ret;
 	
 	HostRequestData *data = (HostRequestData *)malloc(sizeof(HostRequestData));
 
@@ -48,19 +49,17 @@ int main(int argc, char *argv[])
 	} 
 
 	// Add output to file created. 
-	char *reading = malloc(sizeof(100000000000*sizeof(char)));
-
-	while(recv(sock_reader, reading, sizeof(reading), MSG_PEEK | MSG_DONTWAIT)){ 
-		// received 0, means that the connection has been closed. 
+	
+	while(( ret = read(sock_reader, reading, sizeof(reading)) )){ 
+		// read < 0, means that the connection has been closed and could not read. 
 		
-		if(!read(sock_reader, reading, sizeof(reading))){
+		if(ret < 0){
 			PRINT_ERR("Error while transfering file.\n"); 
 			exit(-1);
 		} 
 		fwrite(reading, strlen(reading), 1, fp);  
 		memset(reading, 0, strlen(reading));
 	}
-	
 	free(reading);
 
 	if (exceptions_one_line(response_code)){

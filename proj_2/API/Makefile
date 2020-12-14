@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall  
 
 SRC_DIR = ./src 
-COMMON_SRCS := input_handler.c client.c io.c 
+COMMON_SRCS := input_handler.c client.c io.c utils.c
 COMMON_SRC_OBJ = $(COMMON_SRCS:%.c=%.o)  					# common .o files 
 
 MAIN_SRCS := download.c

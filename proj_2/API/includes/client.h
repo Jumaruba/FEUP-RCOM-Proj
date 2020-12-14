@@ -14,6 +14,7 @@
 #include <string.h> 
 #include "macros.h"
 #include "io.h"
+#include "utils.h"
 
 
 /**
